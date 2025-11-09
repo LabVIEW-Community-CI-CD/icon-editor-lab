@@ -1,4 +1,3 @@
-$ErrorActionPreference = 'Stop'
 
 Describe 'Icon Editor packaging smoke guards' -Tag 'IconEditor','Packaging','Smoke' {
     BeforeAll {
@@ -474,4 +473,11 @@ Add-Content -LiteralPath $env:VIPM_TEST_LOG -Value ('apply-{0}-{1}-{2}' -f $Supp
         $requestJson = Get-Content -LiteralPath $requestsPath -Raw | ConvertFrom-Json -Depth 6
         $requestJson.count | Should -BeGreaterThan 0
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

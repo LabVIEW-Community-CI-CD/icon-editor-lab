@@ -1,6 +1,5 @@
 #Requires -Version 7.0
 
-Set-StrictMode -Version Latest
 
 Describe 'Update-VipbDisplayInfo.ps1' {
     BeforeAll {
@@ -189,3 +188,10 @@ Describe 'Update-VipbDisplayInfo.ps1' {
     }
 }
 
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
+}

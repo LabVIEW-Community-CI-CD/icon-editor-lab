@@ -1,6 +1,5 @@
 #Requires -Version 7.0
 
-Set-StrictMode -Version Latest
 
 Describe 'IconEditorPackage helpers' {
     BeforeAll {
@@ -365,4 +364,11 @@ exit 0
             }
         }
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

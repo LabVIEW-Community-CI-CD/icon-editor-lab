@@ -66,3 +66,10 @@ Describe 'Test-IconEditorPackage.ps1' -Tag 'IconEditor','Packaging','Unit' {
     $summary.items[0].checks.hasLvIconX64 | Should -BeFalse
   }
 }
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
+}

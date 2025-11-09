@@ -1,5 +1,3 @@
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
 
 Describe 'IconEditor development mode (integration)' -Tag 'IconEditor','Integration','DevMode' {
     BeforeAll {
@@ -123,4 +121,11 @@ Describe 'IconEditor development mode (integration)' -Tag 'IconEditor','Integrat
             $stateAfterDisable.Active | Should -BeFalse
         }
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

@@ -1,5 +1,3 @@
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
 
 Describe 'Prepare-LabVIEWHost helper' -Tag 'Unit','IconEditor' {
   BeforeAll {
@@ -182,4 +180,11 @@ New-Item -ItemType Directory -Path `$runRoot -Force | Out-Null
     $enableTelemetry = Get-Content -LiteralPath $result.devModeTelemetry.enable -Raw | ConvertFrom-Json
     $enableTelemetry.mode | Should -Be 'enable'
   }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

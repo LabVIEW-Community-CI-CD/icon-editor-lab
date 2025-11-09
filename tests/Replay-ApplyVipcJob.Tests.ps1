@@ -1,6 +1,5 @@
 #Requires -Version 7.0
 
-Set-StrictMode -Version Latest
 
 Describe 'Replay-ApplyVipcJob helpers' -Tag 'Unit' {
     BeforeAll {
@@ -66,4 +65,11 @@ Describe 'Replay-ApplyVipcJob helpers' -Tag 'Unit' {
         Assert-MockCalled Invoke-ApplyVipcReplay -Times 1 -ParameterFilter { $Toolchain -eq 'vipm' }
     }
 
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

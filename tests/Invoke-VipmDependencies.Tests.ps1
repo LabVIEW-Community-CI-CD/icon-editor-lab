@@ -1,6 +1,12 @@
 #Requires -Version 7.0
+[CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
+param(
+  [Parameter()][ValidateSet('2021','2023','2025')][string]$LabVIEWVersion = '2023',
+  [Parameter()][ValidateSet(32,64)][int]$Bitness = 64,
+  [Parameter()][ValidateNotNullOrEmpty()][string]$Workspace = (Get-Location).Path,
+  [Parameter()][int]$TimeoutSec = 600
+)
 
-Set-StrictMode -Version Latest
 
 Describe 'Invoke-VipmDependencies.ps1 argument handling' -Tag 'Unit','VipmDependencies' {
     BeforeAll {
@@ -79,4 +85,11 @@ Describe 'Invoke-VipmDependencies.ps1 argument handling' -Tag 'Unit','VipmDepend
             & $script:scriptPath -MinimumSupportedLVVersion 2021 -VIP_LVVersion 2023 -SupportedBitness 64 -VIPCPath (New-TemporaryFile)
         } | Should -Throw '*VIPM must be running*'
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

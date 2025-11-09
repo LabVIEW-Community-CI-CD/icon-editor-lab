@@ -1,4 +1,3 @@
-$ErrorActionPreference = 'Stop'
 
 Describe 'Invoke-MissingInProjectCLI.ps1' -Tag 'MissingInProject','Unit' {
     BeforeAll {
@@ -344,4 +343,11 @@ param(
             & $harness.Restore $harness.OriginalPath $harness.OriginalGh $originalMode $harness.OriginalRepo $harness.OriginalSkip $harness.OriginalGCliPath $harness.OriginalResults $harness.OriginalResetScript
         }
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

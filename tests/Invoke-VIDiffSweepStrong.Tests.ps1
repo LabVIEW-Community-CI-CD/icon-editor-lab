@@ -1,5 +1,10 @@
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
+[CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
+param(
+  [Parameter()][ValidateSet('2021','2023','2025')][string]$LabVIEWVersion = '2023',
+  [Parameter()][ValidateSet(32,64)][int]$Bitness = 64,
+  [Parameter()][ValidateNotNullOrEmpty()][string]$Workspace = (Get-Location).Path,
+  [Parameter()][int]$TimeoutSec = 600
+)
 
 Describe 'Invoke-VIDiffSweepStrong.ps1' -Tag 'Script','IconEditor' {
   BeforeAll {
@@ -302,3 +307,10 @@ Describe 'Invoke-VIDiffSweepStrong.ps1' -Tag 'Script','IconEditor' {
   }
 }
 
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
+}

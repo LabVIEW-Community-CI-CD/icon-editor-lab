@@ -209,3 +209,10 @@ Describe 'MissingInProject honours dev-mode token' -Tag 'IconEditor','Integratio
     }
 }
 
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
+}

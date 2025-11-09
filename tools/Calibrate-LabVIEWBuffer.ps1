@@ -1,4 +1,7 @@
 #Requires -Version 7.0
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$PSModuleAutoLoadingPreference = 'None'
 [CmdletBinding()]
 param(
   [object[]]$BufferSeconds = @(5, 10, 15),
@@ -343,4 +346,23 @@ if (-not $Quiet) {
     $successText = ("{0}/{1}" -f $result.successCount, $runsCount)
     Write-Host ("{0,8}s | {1,7} | {2,6} | {3}" -f $result.bufferSeconds, $successText, $forcedCount, $remainingText)
   }
+}
+
+function Test-ValidLabel {
+  param([Parameter(Mandatory)][string]$Label)
+  if ($Label -notmatch '^[A-Za-z0-9._-]{1,64}$') { throw "Invalid label: $Label" }
+}
+
+function Invoke-WithTimeout {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)][scriptblock]$ScriptBlock,
+    [Parameter()][int]$TimeoutSec = 600
+  )
+  $job = Start-Job -ScriptBlock $ScriptBlock
+  if (-not (Wait-Job $job -Timeout $TimeoutSec)) {
+    try { Stop-Job $job -Force } catch {}
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

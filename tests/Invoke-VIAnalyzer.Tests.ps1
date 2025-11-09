@@ -1,5 +1,10 @@
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
+[CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
+param(
+  [Parameter()][ValidateSet('2021','2023','2025')][string]$LabVIEWVersion = '2023',
+  [Parameter()][ValidateSet(32,64)][int]$Bitness = 64,
+  [Parameter()][ValidateNotNullOrEmpty()][string]$Workspace = (Get-Location).Path,
+  [Parameter()][int]$TimeoutSec = 600
+)
 
 Describe 'Invoke-VIAnalyzer.ps1' -Tag 'Unit','IconEditor','VIAnalyzer' {
   BeforeAll {
@@ -312,4 +317,11 @@ exit 3
         -OutputRoot (Join-Path $TestDrive 'results-testfail')
     } | Should -Throw '*MissingInProjectCLI.vi*'
   }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

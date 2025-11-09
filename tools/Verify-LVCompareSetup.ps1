@@ -26,6 +26,11 @@ foreach ($candidate in $configCandidates) {
     if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { continue }
     try {
         $config = Get-Content -LiteralPath $candidate -Raw | ConvertFrom-Json -Depth 8
+
+$schemaPath = Join-Path $PSScriptRoot 'configs/schema/vi-diff-heuristics.schema.json'
+if (Test-Path -LiteralPath $schemaPath) {
+  ($cfgContent) | Test-Json -SchemaFile $schemaPath -ErrorAction Stop
+}
         $configPath = $candidate
         break
     } catch {
@@ -214,4 +219,23 @@ Write-Host 'LVCompare setup verified.' -ForegroundColor Green
     LVComparePath  = $paths.LVComparePath
     LabVIEWCLIPath = $paths.LabVIEWCLIPath
     ConfigSource   = $paths.ConfigSource
+}
+
+function Test-ValidLabel {
+  param([Parameter(Mandatory)][string]$Label)
+  if ($Label -notmatch '^[A-Za-z0-9._-]{1,64}$') { throw "Invalid label: $Label" }
+}
+
+function Invoke-WithTimeout {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)][scriptblock]$ScriptBlock,
+    [Parameter()][int]$TimeoutSec = 600
+  )
+  $job = Start-Job -ScriptBlock $ScriptBlock
+  if (-not (Wait-Job $job -Timeout $TimeoutSec)) {
+    try { Stop-Job $job -Force } catch {}
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

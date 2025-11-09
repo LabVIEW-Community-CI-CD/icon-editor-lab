@@ -1,4 +1,3 @@
-$ErrorActionPreference = 'Stop'
 
 Describe 'Update-IconEditorFixtureReport.ps1' -Tag 'IconEditor','FixtureReport','Unit' {
     BeforeAll {
@@ -60,4 +59,11 @@ Describe 'Update-IconEditorFixtureReport.ps1' -Tag 'IconEditor','FixtureReport',
         $pwshInvocations.Count | Should -Be 1
         ($pwshInvocations[0] | Where-Object { $_ -is [string] -and $_ -like '*Describe-IconEditorFixture.ps1' }) | Should -Not -BeNullOrEmpty
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

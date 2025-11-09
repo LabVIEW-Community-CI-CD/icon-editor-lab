@@ -407,3 +407,10 @@ exit 0
         $summary.requirements.maxConsecutiveVerified | Should -Be 2
     }
 }
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
+}

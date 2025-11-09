@@ -1,3 +1,6 @@
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$PSModuleAutoLoadingPreference = 'None'
 <#!
 .SYNOPSIS
   Follow a metrics snapshots NDJSON file produced by -MetricsSnapshotPath and pretty-print selected fields.
@@ -60,4 +63,23 @@ while ($true) {
     $vals += $v
   }
   Write-Host ("{0,5} {1,3} {2,3} {3,7} {4}" -f $o.iteration,$o.diffCount,$o.errorCount,[string]::Format('{0:N3}',$o.averageSeconds),($vals -join ' '))
+}
+
+function Test-ValidLabel {
+  param([Parameter(Mandatory)][string]$Label)
+  if ($Label -notmatch '^[A-Za-z0-9._-]{1,64}$') { throw "Invalid label: $Label" }
+}
+
+function Invoke-WithTimeout {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)][scriptblock]$ScriptBlock,
+    [Parameter()][int]$TimeoutSec = 600
+  )
+  $job = Start-Job -ScriptBlock $ScriptBlock
+  if (-not (Wait-Job $job -Timeout $TimeoutSec)) {
+    try { Stop-Job $job -Force } catch {}
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

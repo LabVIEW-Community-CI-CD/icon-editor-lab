@@ -1,5 +1,3 @@
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $modulePath = Join-Path $repoRoot 'tools' 'icon-editor' 'MipScenarioHelpers.psm1'
@@ -30,4 +28,11 @@ Describe 'MipScenarioHelpers' -Tag 'Unit','IconEditor','MissingInProject' {
       } -ArgumentList $dir
     }
   }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

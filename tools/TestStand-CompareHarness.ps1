@@ -1,3 +1,13 @@
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$PSModuleAutoLoadingPreference = 'None'
+[CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
+param(
+  [Parameter()][ValidateSet('2021','2023','2025')][string]$LabVIEWVersion = '2023',
+  [Parameter()][ValidateSet(32,64)][int]$Bitness = 64,
+  [Parameter()][ValidateNotNullOrEmpty()][string]$Workspace = (Get-Location).Path,
+  [Parameter()][int]$TimeoutSec = 600
+)
 <#
 .SYNOPSIS
   Thin wrapper for TestStand: warmup LabVIEW runtime, run LVCompare, and optionally close.
@@ -455,3 +465,8 @@ try {
 }
 
 exit $exitCode
+
+function Test-ValidLabel {
+  param([Parameter(Mandatory)][string]$Label)
+  if ($Label -notmatch '^[A-Za-z0-9._-]{1,64}$') { throw "Invalid label: $Label" }
+}

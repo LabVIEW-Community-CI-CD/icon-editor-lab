@@ -1,4 +1,3 @@
-$ErrorActionPreference = 'Stop'
 
 Describe 'Render-IconEditorFixtureReport.ps1' -Tag 'IconEditor','FixtureReport','Render','Unit' {
     BeforeAll {
@@ -898,4 +897,11 @@ Outro
             }
         }
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

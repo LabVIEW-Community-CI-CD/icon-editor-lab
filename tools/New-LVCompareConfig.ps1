@@ -1,4 +1,7 @@
 #Requires -Version 7.0
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$PSModuleAutoLoadingPreference = 'None'
 [CmdletBinding()]
 param(
   [string]$OutputPath,
@@ -77,6 +80,11 @@ function Get-ConfigPropertyValues {
     if (-not (Test-Path -LiteralPath $configPath -PathType Leaf)) { continue }
     try {
       $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json -Depth 5
+
+$schemaPath = Join-Path $PSScriptRoot 'configs/schema/vi-diff-heuristics.schema.json'
+if (Test-Path -LiteralPath $schemaPath) {
+  ($cfgContent) | Test-Json -SchemaFile $schemaPath -ErrorAction Stop
+}
       if ($null -eq $config) { continue }
       $propValue = $config.PSObject.Properties[$PropertyName]
       if ($propValue) {
@@ -532,4 +540,23 @@ if ($Probe.IsPresent) {
   LabVIEWExePath  = $labviewPathFinal
   LVComparePath   = $lvcomparePathFinal
   LabVIEWCLIPath  = $labviewCliPathFinal
+}
+
+function Test-ValidLabel {
+  param([Parameter(Mandatory)][string]$Label)
+  if ($Label -notmatch '^[A-Za-z0-9._-]{1,64}$') { throw "Invalid label: $Label" }
+}
+
+function Invoke-WithTimeout {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)][scriptblock]$ScriptBlock,
+    [Parameter()][int]$TimeoutSec = 600
+  )
+  $job = Start-Job -ScriptBlock $ScriptBlock
+  if (-not (Wait-Job $job -Timeout $TimeoutSec)) {
+    try { Stop-Job $job -Force } catch {}
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

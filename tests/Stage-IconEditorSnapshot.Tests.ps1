@@ -1,4 +1,3 @@
-$ErrorActionPreference = 'Stop'
 
 Describe 'Stage-IconEditorSnapshot.ps1' -Tag 'IconEditor','Snapshot','Unit' {
     BeforeAll {
@@ -362,4 +361,11 @@ $stubTemplate.Replace('__LOG_PATH__', $logPath) | Set-Content -LiteralPath $vali
 
         $Global:StageDevModeLog.Count | Should -Be 0
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }

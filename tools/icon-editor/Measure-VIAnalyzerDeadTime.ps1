@@ -124,3 +124,22 @@ $outputPath = Join-Path $resultsResolved ("deadtime-{0}.json" -f $Label)
 $payload | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $outputPath -Encoding utf8
 
 Write-Host ("[deadtime] Results written to {0}" -f $outputPath) -ForegroundColor Cyan
+
+function Test-ValidLabel {
+  param([Parameter(Mandatory)][string]$Label)
+  if ($Label -notmatch '^[A-Za-z0-9._-]{1,64}$') { throw "Invalid label: $Label" }
+}
+
+function Invoke-WithTimeout {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)][scriptblock]$ScriptBlock,
+    [Parameter()][int]$TimeoutSec = 600
+  )
+  $job = Start-Job -ScriptBlock $ScriptBlock
+  if (-not (Wait-Job $job -Timeout $TimeoutSec)) {
+    try { Stop-Job $job -Force } catch {}
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
+}

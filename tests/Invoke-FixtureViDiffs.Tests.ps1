@@ -1,3 +1,10 @@
+[CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
+param(
+  [Parameter()][ValidateSet('2021','2023','2025')][string]$LabVIEWVersion = '2023',
+  [Parameter()][ValidateSet(32,64)][int]$Bitness = 64,
+  [Parameter()][ValidateNotNullOrEmpty()][string]$Workspace = (Get-Location).Path,
+  [Parameter()][int]$TimeoutSec = 600
+)
 $ErrorActionPreference = 'Stop'
 
 Describe 'Invoke-FixtureViDiffs.ps1' {
@@ -115,4 +122,11 @@ return
         $pairDir = Join-Path $capturesRoot $summary.requests[0].captureDir
         Test-Path -LiteralPath (Join-Path $pairDir 'session-index.json') | Should -BeTrue
     }
+}
+
+}
+
+    throw "Operation timed out in $TimeoutSec s"
+  }
+  Receive-Job $job -ErrorAction Stop
 }
