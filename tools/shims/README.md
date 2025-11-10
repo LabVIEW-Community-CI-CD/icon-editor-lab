@@ -1,29 +1,17 @@
+---
+name: shims
+category: General
+tags:
+- general
+- punycode
+- shims
+- userland
+summary: punycode userland
+language: TypeScript/JavaScript
+path: icon-editor-lab-6/tools/shims
+updated: '2025-11-10'
+---
 # shims
 
-**Path:** `tools/shims`  
-**Languages:** JavaScript, TypeScript  
-**Entrypoints:** n/a
+punycode userland
 
-## Overview
-No description found. TODO: add overview.
-
-## Usage
-TBD. Document basic usage and examples here.
-
-## Inputs / Outputs
-- **Inputs:** TBD
-- **Outputs:** TBD
-
-## Dependencies
-- None detected
-
-## Contents
-- `punycode-userland.mjs`
-- `punycode-userland.ts`
-
-## Maintenance
-- **Owner:** TBD
-- **Status:** Active
-
-## License
-- Inherit repo license unless overridden here.

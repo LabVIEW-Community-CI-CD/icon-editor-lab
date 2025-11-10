@@ -1,30 +1,15 @@
+---
+name: Vipm
+category: General
+tags:
+- general
+- vipm
+summary: Vipm
+language: Mixed
+path: icon-editor-lab-6/tools/Vipm
+updated: '2025-11-10'
+---
 # Vipm
 
-**Path:** `tools/Vipm`  
-**Languages:** JSON, PowerShell  
-**Entrypoints:** n/a
+Vipm
 
-## Overview
-Requires -Version 7.0
-
-## Usage
-TBD. Document basic usage and examples here.
-
-## Inputs / Outputs
-- **Inputs:** TBD
-- **Outputs:** TBD
-
-## Dependencies
-- None detected
-
-## Contents
-- `Invoke-ProviderComparison.ps1`
-- `Test-ProviderTelemetry.ps1`
-- `example-scenarios.json`
-
-## Maintenance
-- **Owner:** TBD
-- **Status:** Active
-
-## License
-- Inherit repo license unless overridden here.

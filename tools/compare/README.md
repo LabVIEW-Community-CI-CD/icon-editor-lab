@@ -1,28 +1,15 @@
+---
+name: compare
+category: Analysis/Diff
+tags:
+- analysis-diff
+- compare
+summary: compare
+language: Mixed
+path: icon-editor-lab-6/tools/compare
+updated: '2025-11-10'
+---
 # compare
 
-**Path:** `tools/compare`  
-**Languages:** PowerShell  
-**Entrypoints:** n/a
+compare
 
-## Overview
-Requires -Version 7.0
-
-## Usage
-TBD. Document basic usage and examples here.
-
-## Inputs / Outputs
-- **Inputs:** TBD
-- **Outputs:** TBD
-
-## Dependencies
-- None detected
-
-## Contents
-- `Find-VIComparisonCandidates.ps1`
-
-## Maintenance
-- **Owner:** TBD
-- **Status:** Active
-
-## License
-- Inherit repo license unless overridden here.

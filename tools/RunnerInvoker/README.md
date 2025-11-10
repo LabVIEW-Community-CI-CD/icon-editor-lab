@@ -1,30 +1,15 @@
+---
+name: RunnerInvoker
+category: General
+tags:
+- general
+- runnerinvoker
+summary: RunnerInvoker
+language: Mixed
+path: icon-editor-lab-6/tools/RunnerInvoker
+updated: '2025-11-10'
+---
 # RunnerInvoker
 
-**Path:** `tools/RunnerInvoker`  
-**Languages:** PowerShell  
-**Entrypoints:** n/a
+RunnerInvoker
 
-## Overview
-Set-StrictMode -Version Latest
-
-## Usage
-TBD. Document basic usage and examples here.
-
-## Inputs / Outputs
-- **Inputs:** TBD
-- **Outputs:** TBD
-
-## Dependencies
-- None detected
-
-## Contents
-- `RunnerInvoker.psm1`
-- `Start-RunnerInvoker.ps1`
-- `Wait-InvokerReady.ps1`
-
-## Maintenance
-- **Owner:** TBD
-- **Status:** Active
-
-## License
-- Inherit repo license unless overridden here.

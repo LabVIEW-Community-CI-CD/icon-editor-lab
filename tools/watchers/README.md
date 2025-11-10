@@ -1,28 +1,17 @@
+---
+name: watchers
+category: DevServer/Watch
+tags:
+- devserver-watch
+- orchestrated
+- watch
+- watchers
+summary: orchestrated watch
+language: TypeScript/JavaScript
+path: icon-editor-lab-6/tools/watchers
+updated: '2025-11-10'
+---
 # watchers
 
-**Path:** `tools/watchers`  
-**Languages:** TypeScript  
-**Entrypoints:** n/a
+orchestrated watch
 
-## Overview
-No description found. TODO: add overview.
-
-## Usage
-TBD. Document basic usage and examples here.
-
-## Inputs / Outputs
-- **Inputs:** TBD
-- **Outputs:** TBD
-
-## Dependencies
-- None detected
-
-## Contents
-- `orchestrated-watch.ts`
-
-## Maintenance
-- **Owner:** TBD
-- **Status:** Active
-
-## License
-- Inherit repo license unless overridden here.

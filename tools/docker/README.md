@@ -1,29 +1,15 @@
+---
+name: docker
+category: Build/CI
+tags:
+- build-ci
+- docker
+summary: docker
+language: Mixed
+path: icon-editor-lab-6/tools/docker
+updated: '2025-11-10'
+---
 # docker
 
-**Path:** `tools/docker`  
-**Languages:** PowerShell  
-**Entrypoints:** n/a
+docker
 
-## Overview
-# syntax=docker/dockerfile:1
-
-## Usage
-TBD. Document basic usage and examples here.
-
-## Inputs / Outputs
-- **Inputs:** TBD
-- **Outputs:** TBD
-
-## Dependencies
-- None detected
-
-## Contents
-- `Build-ValidateImage.ps1`
-- `Dockerfile.tools`
-
-## Maintenance
-- **Owner:** TBD
-- **Status:** Active
-
-## License
-- Inherit repo license unless overridden here.
