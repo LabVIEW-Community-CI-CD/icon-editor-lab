@@ -44,7 +44,7 @@ function Test-ValidLabel {
 }
 
 function Invoke-WithTimeout {
-  [CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
   param(
     [Parameter(Mandatory)][scriptblock]$ScriptBlock,
     [Parameter()][int]$TimeoutSec = 600

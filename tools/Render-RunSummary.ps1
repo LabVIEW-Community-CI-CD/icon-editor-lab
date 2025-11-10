@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Render-RunSummary.
+.DESCRIPTION
+  This is an auto-generated help stub for Render-RunSummary. Update before release.
+#>
 param(
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
 param(

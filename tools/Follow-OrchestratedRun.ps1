@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Follow-OrchestratedRun.
+.DESCRIPTION
+  This is an auto-generated help stub for Follow-OrchestratedRun. Update before release.
+#>
 param(
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
 param(

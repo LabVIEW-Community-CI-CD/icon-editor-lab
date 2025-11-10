@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for After-CommitActions.
+.DESCRIPTION
+  This is an auto-generated help stub for After-CommitActions. Update before release.
+#>
 [CmdletBinding()]
 param(
   [string]$RepositoryRoot = '.',

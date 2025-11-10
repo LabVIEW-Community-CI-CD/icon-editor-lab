@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Measure-VIAnalyzerDeadTime.
+.DESCRIPTION
+  This is an auto-generated help stub for Measure-VIAnalyzerDeadTime. Update before release.
+#>
 [CmdletBinding()]
 param(
   [string]$RepoRoot,

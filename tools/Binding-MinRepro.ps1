@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Binding-MinRepro.
+.DESCRIPTION
+  This is an auto-generated help stub for Binding-MinRepro. Update before release.
+#>
 Set-StrictMode -Version Latest
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
 param(

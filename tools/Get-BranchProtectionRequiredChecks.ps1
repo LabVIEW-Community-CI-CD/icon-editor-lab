@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Get-BranchProtectionRequiredChecks.
+.DESCRIPTION
+  This is an auto-generated help stub for Get-BranchProtectionRequiredChecks. Update before release.
+#>
 [CmdletBinding()]
 param(
   [Parameter(Mandatory=$true)][string]$Owner,

@@ -1,4 +1,10 @@
-[CmdletBinding()]
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Update-SessionIndexWatcher.
+.DESCRIPTION
+  This is an auto-generated help stub for Update-SessionIndexWatcher. Update before release.
+#>
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$ResultsDir = 'tests/results',
   [string]$WatcherJson

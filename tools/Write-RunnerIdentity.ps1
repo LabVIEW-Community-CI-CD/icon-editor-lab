@@ -2,7 +2,7 @@
 .SYNOPSIS
   Append runner identity metadata to job summary.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$SampleId
 )

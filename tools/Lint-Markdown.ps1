@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Lint-Markdown.
+.DESCRIPTION
+  This is an auto-generated help stub for Lint-Markdown. Update before release.
+#>
 param(
   [switch]$All,
   [string]$BaseRef

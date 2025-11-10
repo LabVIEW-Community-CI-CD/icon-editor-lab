@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Collect-RunnerHealth.
+.DESCRIPTION
+  This is an auto-generated help stub for Collect-RunnerHealth. Update before release.
+#>
 [CmdletBinding()]
 param(
   [string]$Enterprise = '',

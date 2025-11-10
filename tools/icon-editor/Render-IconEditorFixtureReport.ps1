@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Render-IconEditorFixtureReport.
+.DESCRIPTION
+  This is an auto-generated help stub for Render-IconEditorFixtureReport. Update before release.
+#>
 
 param(
   [string]$ReportPath,

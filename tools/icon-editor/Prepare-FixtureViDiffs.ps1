@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Prepare-FixtureViDiffs.
+.DESCRIPTION
+  This is an auto-generated help stub for Prepare-FixtureViDiffs. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'

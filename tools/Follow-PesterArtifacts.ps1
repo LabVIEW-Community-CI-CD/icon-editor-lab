@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Follow-PesterArtifacts.
+.DESCRIPTION
+  This is an auto-generated help stub for Follow-PesterArtifacts. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'

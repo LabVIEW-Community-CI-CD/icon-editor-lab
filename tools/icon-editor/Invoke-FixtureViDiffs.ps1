@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Invoke-FixtureViDiffs.
+.DESCRIPTION
+  This is an auto-generated help stub for Invoke-FixtureViDiffs. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'
@@ -101,7 +107,7 @@ function Test-ValidLabel {
 }
 
 function Invoke-WithTimeout {
-  [CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
   param(
     [Parameter(Mandatory)][scriptblock]$ScriptBlock,
     [Parameter()][int]$TimeoutSec = 600

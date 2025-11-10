@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for pre-push.
+.DESCRIPTION
+  This is an auto-generated help stub for pre-push. Update before release.
+#>
 [CmdletBinding()]
 param()
 

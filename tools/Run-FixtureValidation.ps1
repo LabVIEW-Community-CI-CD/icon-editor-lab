@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Run-FixtureValidation.
+.DESCRIPTION
+  This is an auto-generated help stub for Run-FixtureValidation. Update before release.
+#>
 [CmdletBinding()]
 param(
   [switch]$NoticeOnly

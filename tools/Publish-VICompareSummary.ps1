@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Publish-VICompareSummary.
+.DESCRIPTION
+  This is an auto-generated help stub for Publish-VICompareSummary. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'

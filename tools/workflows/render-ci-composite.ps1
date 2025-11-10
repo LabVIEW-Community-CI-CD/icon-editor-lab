@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for render-ci-composite.
+.DESCRIPTION
+  This is an auto-generated help stub for render-ci-composite. Update before release.
+#>
 [CmdletBinding()]
 param(
   [switch]$RenderVendor

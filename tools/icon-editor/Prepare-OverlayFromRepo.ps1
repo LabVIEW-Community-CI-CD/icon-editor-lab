@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Prepare-OverlayFromRepo.
+.DESCRIPTION
+  This is an auto-generated help stub for Prepare-OverlayFromRepo. Update before release.
+#>
 
 param(
   [string]$RepoPath,

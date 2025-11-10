@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Parse-CompareExec.
+.DESCRIPTION
+  This is an auto-generated help stub for Parse-CompareExec. Update before release.
+#>
 param(
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
 param(

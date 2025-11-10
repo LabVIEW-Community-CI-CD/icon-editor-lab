@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Invoke-LabelsSync.
+.DESCRIPTION
+  This is an auto-generated help stub for Invoke-LabelsSync. Update before release.
+#>
 param(
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
 param(

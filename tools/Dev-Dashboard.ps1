@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Dev-Dashboard.
+.DESCRIPTION
+  This is an auto-generated help stub for Dev-Dashboard. Update before release.
+#>
 param(
   [string]$Group = 'pester-selfhosted',
   [switch]$Html,

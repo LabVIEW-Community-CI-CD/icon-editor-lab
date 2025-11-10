@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Invoke-JsonSchemaLite.
+.DESCRIPTION
+  This is an auto-generated help stub for Invoke-JsonSchemaLite. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'

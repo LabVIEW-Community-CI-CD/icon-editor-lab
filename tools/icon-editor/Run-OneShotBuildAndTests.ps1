@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Run-OneShotBuildAndTests.
+.DESCRIPTION
+  This is an auto-generated help stub for Run-OneShotBuildAndTests. Update before release.
+#>
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'

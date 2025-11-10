@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Print-PesterTopFailures.
+.DESCRIPTION
+  This is an auto-generated help stub for Print-PesterTopFailures. Update before release.
+#>
 [CmdletBinding()]
 param(
   [string]$ResultsDir = 'tests/results',

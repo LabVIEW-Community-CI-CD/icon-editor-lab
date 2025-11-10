@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Prepare-StandingCommit.
+.DESCRIPTION
+  This is an auto-generated help stub for Prepare-StandingCommit. Update before release.
+#>
 [CmdletBinding()]
 param(
   [string]$RepositoryRoot = '.',

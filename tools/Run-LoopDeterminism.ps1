@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Run-LoopDeterminism.
+.DESCRIPTION
+  This is an auto-generated help stub for Run-LoopDeterminism. Update before release.
+#>
 [CmdletBinding()]
 param(
   [switch]$FailOnViolation

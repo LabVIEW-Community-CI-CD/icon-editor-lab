@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Measure-ResponseWindow.
+.DESCRIPTION
+  This is an auto-generated help stub for Measure-ResponseWindow. Update before release.
+#>
 param(
   [ValidateSet('Start','End','Status')][string]$Action = 'End',
   [string]$Reason = 'unspecified',

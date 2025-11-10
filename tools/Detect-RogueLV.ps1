@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Detect-RogueLV.
+.DESCRIPTION
+  This is an auto-generated help stub for Detect-RogueLV. Update before release.
+#>
 param(
   [string]$ResultsDir = 'tests/results',
   [int]$LookBackSeconds = 900,

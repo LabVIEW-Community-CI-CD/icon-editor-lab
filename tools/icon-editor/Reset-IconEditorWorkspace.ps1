@@ -1,5 +1,11 @@
 #Requires -Version 7.0
-[CmdletBinding()]
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Reset-IconEditorWorkspace.
+.DESCRIPTION
+  This is an auto-generated help stub for Reset-IconEditorWorkspace. Update before release.
+#>
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
     [string]$RepoRoot,
     [string]$IconEditorRoot,

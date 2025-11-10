@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Check-WorkflowDrift.
+.DESCRIPTION
+  This is an auto-generated help stub for Check-WorkflowDrift. Update before release.
+#>
 
 [CmdletBinding()]
 param(

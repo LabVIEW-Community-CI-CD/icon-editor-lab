@@ -2,7 +2,7 @@
 .SYNOPSIS
   Append a concise Compare VI block from compare-summary.json.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$Path = 'compare-artifacts/compare-summary.json',
   [string]$Title = 'Compare VI'

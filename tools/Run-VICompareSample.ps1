@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Run-VICompareSample.
+.DESCRIPTION
+  This is an auto-generated help stub for Run-VICompareSample. Update before release.
+#>
 [CmdletBinding()]
 param(
   [string]$LabVIEWPath = 'C:\Program Files\National Instruments\LabVIEW 2025\LabVIEW.exe',

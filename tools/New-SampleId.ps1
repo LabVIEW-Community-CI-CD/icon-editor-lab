@@ -14,7 +14,7 @@ $PSModuleAutoLoadingPreference = 'None'
 .OUTPUTS
   Writes the id to stdout and sets GITHUB_OUTPUT 'sample_id' if available.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$Prefix,
   [ValidateSet('ts','guid')][string]$Format = 'ts'

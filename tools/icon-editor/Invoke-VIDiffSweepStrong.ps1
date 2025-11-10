@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Invoke-VIDiffSweepStrong.
+.DESCRIPTION
+  This is an auto-generated help stub for Invoke-VIDiffSweepStrong. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'

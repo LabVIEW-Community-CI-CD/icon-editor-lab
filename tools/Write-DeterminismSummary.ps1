@@ -2,7 +2,7 @@
 .SYNOPSIS
   Append a concise Determinism block to the job summary based on LOOP_* envs.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'

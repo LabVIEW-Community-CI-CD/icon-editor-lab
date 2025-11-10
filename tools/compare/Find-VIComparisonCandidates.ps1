@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Find-VIComparisonCandidates.
+.DESCRIPTION
+  This is an auto-generated help stub for Find-VIComparisonCandidates. Update before release.
+#>
 
 param(
   [string]$RepoPath,

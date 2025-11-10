@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Test-FixtureValidationDeltaSchema.
+.DESCRIPTION
+  This is an auto-generated help stub for Test-FixtureValidationDeltaSchema. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'

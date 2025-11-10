@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Inspect-MissingProjectItems.
+.DESCRIPTION
+  This is an auto-generated help stub for Inspect-MissingProjectItems. Update before release.
+#>
 
 [CmdletBinding()]
 param(

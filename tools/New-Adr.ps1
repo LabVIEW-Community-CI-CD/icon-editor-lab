@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for New-Adr.
+.DESCRIPTION
+  This is an auto-generated help stub for New-Adr. Update before release.
+#>
 param(
   [Parameter(Mandatory)]
   [string]$Title,

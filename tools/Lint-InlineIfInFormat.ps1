@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Lint-InlineIfInFormat.
+.DESCRIPTION
+  This is an auto-generated help stub for Lint-InlineIfInFormat. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 

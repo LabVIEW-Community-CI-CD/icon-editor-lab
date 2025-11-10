@@ -1,4 +1,10 @@
-[CmdletBinding()]
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Invoke-CompareCli.
+.DESCRIPTION
+  This is an auto-generated help stub for Invoke-CompareCli. Update before release.
+#>
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Category,
   [Parameter()][ValidateSet('auto','include','exclude')][string]$IntegrationMode = 'include',

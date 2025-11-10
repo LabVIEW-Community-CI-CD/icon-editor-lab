@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Force-CloseLabVIEW.
+.DESCRIPTION
+  This is an auto-generated help stub for Force-CloseLabVIEW. Update before release.
+#>
 param(
   [string[]]$ProcessName = @('LabVIEW','LVCompare'),
   [switch]$DryRun,

@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Write-AgentContext.
+.DESCRIPTION
+  This is an auto-generated help stub for Write-AgentContext. Update before release.
+#>
 param(
   [string]$ResultsDir = 'tests/results',
   [int]$MaxNotices = 10,

@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Traceability-Matrix.
+.DESCRIPTION
+  This is an auto-generated help stub for Traceability-Matrix. Update before release.
+#>
 # Traceability Matrix Builder (Traceability Matrix Plan v1.0.0)
 param(
   [string]$TestsPath = 'tests',

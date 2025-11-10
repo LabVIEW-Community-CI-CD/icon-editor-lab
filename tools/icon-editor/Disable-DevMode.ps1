@@ -1,5 +1,11 @@
 #Requires -Version 7.0
-[CmdletBinding()]
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Disable-DevMode.
+.DESCRIPTION
+  This is an auto-generated help stub for Disable-DevMode. Update before release.
+#>
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$RepoRoot,
   [string]$IconEditorRoot,

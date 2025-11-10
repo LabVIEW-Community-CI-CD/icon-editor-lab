@@ -2,7 +2,7 @@
 .SYNOPSIS
   Append a concise Fixture Drift block from drift-summary.json (best-effort).
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$Dir = 'results/fixture-drift',
   [string]$SummaryFile = 'drift-summary.json'

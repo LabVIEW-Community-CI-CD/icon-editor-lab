@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Sync-IconEditorFork.
+.DESCRIPTION
+  This is an auto-generated help stub for Sync-IconEditorFork. Update before release.
+#>
 
 param(
   [string]$RemoteName = 'icon-editor',

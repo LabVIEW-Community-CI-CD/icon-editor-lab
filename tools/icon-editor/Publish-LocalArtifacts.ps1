@@ -1,6 +1,12 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Publish-LocalArtifacts.
+.DESCRIPTION
+  This is an auto-generated help stub for Publish-LocalArtifacts. Update before release.
+#>
 
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$ArtifactsRoot = 'tests/results/_agent/icon-editor',
   [string]$GhTokenPath,

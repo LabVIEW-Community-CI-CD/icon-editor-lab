@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Get-PesterVersion.
+.DESCRIPTION
+  This is an auto-generated help stub for Get-PesterVersion. Update before release.
+#>
 [CmdletBinding()]
 param(
   [switch]$EmitEnv,

@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Validate-AdrLinks.
+.DESCRIPTION
+  This is an auto-generated help stub for Validate-AdrLinks. Update before release.
+#>
 param(
   [string]$RequirementsDir = 'docs/requirements',
   [string]$AdrDir = 'docs/adr'

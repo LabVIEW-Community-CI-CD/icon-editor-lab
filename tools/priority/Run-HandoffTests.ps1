@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Run-HandoffTests.
+.DESCRIPTION
+  This is an auto-generated help stub for Run-HandoffTests. Update before release.
+#>
 [CmdletBinding()]
 param()
 

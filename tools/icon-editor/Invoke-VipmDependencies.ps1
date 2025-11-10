@@ -1,6 +1,12 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Invoke-VipmDependencies.
+.DESCRIPTION
+  This is an auto-generated help stub for Invoke-VipmDependencies. Update before release.
+#>
 
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param (
     [string]$MinimumSupportedLVVersion,
     [string]$VIP_LVVersion,

@@ -1,4 +1,10 @@
-[CmdletBinding()]
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Write-DerivedEnv.
+.DESCRIPTION
+  This is an auto-generated help stub for Write-DerivedEnv. Update before release.
+#>
+[CmdletBinding(SupportsShouldProcess = $true)]
 param()
 
 Set-StrictMode -Version Latest

@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Trigger-StandingWorkflow.
+.DESCRIPTION
+  This is an auto-generated help stub for Trigger-StandingWorkflow. Update before release.
+#>
 [CmdletBinding()]
 param(
   [switch]$PlanOnly,

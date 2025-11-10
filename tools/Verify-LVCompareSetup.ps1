@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Verify-LVCompareSetup.
+.DESCRIPTION
+  This is an auto-generated help stub for Verify-LVCompareSetup. Update before release.
+#>
 [CmdletBinding()]
 param(
     [switch]$ProbeCli

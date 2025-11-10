@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Update-IconEditorFixtureReport.
+.DESCRIPTION
+  This is an auto-generated help stub for Update-IconEditorFixtureReport. Update before release.
+#>
 
 param(
   [string]$FixturePath,

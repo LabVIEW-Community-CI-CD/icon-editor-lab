@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Prepare-LabVIEWHost.
+.DESCRIPTION
+  This is an auto-generated help stub for Prepare-LabVIEWHost. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'

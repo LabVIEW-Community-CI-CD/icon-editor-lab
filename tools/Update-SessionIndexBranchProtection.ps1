@@ -35,7 +35,7 @@ $PSModuleAutoLoadingPreference = 'None'
   Override the actual.status field. Defaults to 'available' when -ActualContexts is provided,
   otherwise 'unavailable'.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$ResultsDir = 'tests/results',
   [string]$PolicyPath = 'tools/policy/branch-required-checks.json',

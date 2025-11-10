@@ -2,7 +2,7 @@
 .SYNOPSIS
   Append a concise “Top Failures” section to the job summary from Pester outputs.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$ResultsDir = 'tests/results',
   [int]$Top = 5

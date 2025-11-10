@@ -1,8 +1,14 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Write-RunReport.
+.DESCRIPTION
+  This is an auto-generated help stub for Write-RunReport. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
 [Parameter(Mandatory)][ValidateSet('host-prep','missing-in-project','unit-tests','lvcompare')]
   [string]$Kind,

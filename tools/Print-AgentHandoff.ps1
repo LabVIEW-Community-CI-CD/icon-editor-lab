@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Print-AgentHandoff.
+.DESCRIPTION
+  This is an auto-generated help stub for Print-AgentHandoff. Update before release.
+#>
 [CmdletBinding()]
 param(
   [switch]$ApplyToggles,

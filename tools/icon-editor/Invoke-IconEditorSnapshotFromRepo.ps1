@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Invoke-IconEditorSnapshotFromRepo.
+.DESCRIPTION
+  This is an auto-generated help stub for Invoke-IconEditorSnapshotFromRepo. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'

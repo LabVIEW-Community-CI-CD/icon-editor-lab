@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Render-ViComparisonReport.
+.DESCRIPTION
+  This is an auto-generated help stub for Render-ViComparisonReport. Update before release.
+#>
 
 [CmdletBinding()]
 param(

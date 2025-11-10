@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Lint-DotSourcing.
+.DESCRIPTION
+  This is an auto-generated help stub for Lint-DotSourcing. Update before release.
+#>
 [CmdletBinding()]
 param(
   [switch] $WarnOnly

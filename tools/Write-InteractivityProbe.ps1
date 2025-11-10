@@ -2,7 +2,7 @@
 .SYNOPSIS
   Emit a small interactivity/console probe to the job Step Summary and stdout.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'

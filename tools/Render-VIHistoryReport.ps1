@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Render-VIHistoryReport.
+.DESCRIPTION
+  This is an auto-generated help stub for Render-VIHistoryReport. Update before release.
+#>
 param(
   [Parameter(Mandatory = $true)]
   [string]$ManifestPath,

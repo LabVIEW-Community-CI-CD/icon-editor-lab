@@ -1,8 +1,14 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for New-LVCompareConfig.
+.DESCRIPTION
+  This is an auto-generated help stub for New-LVCompareConfig. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$OutputPath,
   [switch]$NonInteractive,

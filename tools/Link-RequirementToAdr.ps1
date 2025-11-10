@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Link-RequirementToAdr.
+.DESCRIPTION
+  This is an auto-generated help stub for Link-RequirementToAdr. Update before release.
+#>
 param(
   [Parameter(Mandatory)][string]$Requirement,
   [Parameter(Mandatory)][string]$AdrId

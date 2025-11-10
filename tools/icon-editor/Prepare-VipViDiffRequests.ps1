@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Prepare-VipViDiffRequests.
+.DESCRIPTION
+  This is an auto-generated help stub for Prepare-VipViDiffRequests. Update before release.
+#>
 
 param(
   [Parameter(Mandatory)][string]$ExtractRoot,

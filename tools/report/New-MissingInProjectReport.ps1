@@ -1,8 +1,14 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for New-MissingInProjectReport.
+.DESCRIPTION
+  This is an auto-generated help stub for New-MissingInProjectReport. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'
 #Requires -Version 7.0
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$Label = ("missinginproject-{0}" -f (Get-Date -Format 'yyyyMMddTHHmmss')),
   [string]$Command = "<paste command>",

@@ -1,8 +1,14 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for New-HostPrepReport.
+.DESCRIPTION
+  This is an auto-generated help stub for New-HostPrepReport. Update before release.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSModuleAutoLoadingPreference = 'None'
 #Requires -Version 7.0
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$Label = ("host-prep-{0}" -f (Get-Date -Format 'yyyyMMddTHHmmss')),
   [string]$Command = "<paste command>",

@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Post-Run-Cleanup.
+.DESCRIPTION
+  This is an auto-generated help stub for Post-Run-Cleanup. Update before release.
+#>
 # Post-run cleanup orchestrator. Aggregates cleanup requests and ensures close
 # helpers execute at most once per job via the Once-Guard module.
 [CmdletBinding()]

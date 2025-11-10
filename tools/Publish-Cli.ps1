@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Publish-Cli.
+.DESCRIPTION
+  This is an auto-generated help stub for Publish-Cli. Update before release.
+#>
 Set-StrictMode -Version Latest
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]
 param(

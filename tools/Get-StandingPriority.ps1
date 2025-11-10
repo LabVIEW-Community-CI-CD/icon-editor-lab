@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Get-StandingPriority.
+.DESCRIPTION
+  This is an auto-generated help stub for Get-StandingPriority. Update before release.
+#>
 [CmdletBinding()]
 param(
   [switch]$Plain,

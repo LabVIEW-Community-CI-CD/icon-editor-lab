@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Agent-Wait.
+.DESCRIPTION
+  This is an auto-generated help stub for Agent-Wait. Update before release.
+#>
 param()
 
 Set-StrictMode -Version Latest

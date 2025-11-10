@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Assert-ValidateOutputs.
+.DESCRIPTION
+  This is an auto-generated help stub for Assert-ValidateOutputs. Update before release.
+#>
 [CmdletBinding()]
 param(
   [string]$ResultsRoot = 'tests/results',

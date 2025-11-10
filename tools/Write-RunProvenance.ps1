@@ -17,7 +17,7 @@ $PSModuleAutoLoadingPreference = 'None'
   Writes JSON to <ResultsDir>/provenance.json and, when GITHUB_STEP_SUMMARY is set, appends a concise
   "Run Provenance" block.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$ResultsDir = 'tests/results',
 [string]$FileName = 'provenance.json',

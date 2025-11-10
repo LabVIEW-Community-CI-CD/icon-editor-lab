@@ -1,5 +1,11 @@
 #Requires -Version 7.0
-[CmdletBinding()]
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Invoke-WithTranscript.
+.DESCRIPTION
+  This is an auto-generated help stub for Invoke-WithTranscript. Update before release.
+#>
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [Parameter(Mandatory)][string]$Label,
   [Parameter(Mandatory)][string]$Command,

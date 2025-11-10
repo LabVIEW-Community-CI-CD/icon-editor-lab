@@ -2,7 +2,7 @@
 .SYNOPSIS
   Append a concise Session block from tests/results/session-index.json.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
   [string]$ResultsDir = 'tests/results',
   [string]$FileName = 'session-index.json'

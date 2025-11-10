@@ -55,7 +55,7 @@ $PSModuleAutoLoadingPreference = 'None'
 .PARAMETER EndRef
   Optional Compare-VIHistory `-EndRef` override.
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
     [Parameter(Mandatory)]
     [string]$ManifestPath,

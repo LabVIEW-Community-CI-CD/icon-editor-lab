@@ -1,4 +1,10 @@
 #Requires -Version 7.0
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Analyze-CompareReportImages.
+.DESCRIPTION
+  This is an auto-generated help stub for Analyze-CompareReportImages. Update before release.
+#>
 [CmdletBinding()]
 param(
   [Parameter(Mandatory)] [string]$ReportHtmlPath,

@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Print-ToolVersions.
+.DESCRIPTION
+  This is an auto-generated help stub for Print-ToolVersions. Update before release.
+#>
 [CmdletBinding()]
 param()
 

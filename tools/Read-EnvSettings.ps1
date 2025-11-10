@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+  TODO: Write a concise synopsis for Read-EnvSettings.
+.DESCRIPTION
+  This is an auto-generated help stub for Read-EnvSettings. Update before release.
+#>
 param(
   [switch]$Json
 )
