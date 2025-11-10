@@ -1,28 +1,28 @@
 # New-HostPrepReport.ps1
 
-**Path:** `icon-editor-lab-8/tools/report/New-HostPrepReport.ps1`  
-**Hash:** `d1d619e30c85`
+**Path:** `tools/report/New-HostPrepReport.ps1`
 
 ## Synopsis
-Requires -Version 7.0
+Generates a Markdown block summarizing Host Prep runs (hardware prep, VIPM apply, etc.) for inclusion in PR comments or session index logs.
 
 ## Description
-—
-
+- Mirrors `New-LVCompareReport.ps1` but labels the section “Host Prep” so stakeholders can distinguish host readiness runs from compare suites.
+- Callers provide the command line, transcript path, telemetry location, summary text, and warning text; the script assembles the Markdown with fenced code blocks for the summary and warnings.
+- Handy when collating manual validation steps or attaching readiness evidence to a PR.
 
 ### Parameters
 | Name | Type | Default |
-|---|---|---|
-| `Label` | string | ("host-prep-{0}" -f (Get-Date -Format 'yyyyMMddTHHmmss' |
+| --- | --- | --- |
+| `Label` | string | `host-prep-<timestamp>` |
+| `Command` | string | `<paste command>` |
+| `Transcript` | string | `<path>` |
+| `Telemetry` | string | `<path>` |
+| `Summary` | string | `<paste summary block>` |
+| `Warnings` | string | `<warnings/errors>` |
 
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+## Outputs
+- Markdown text written to stdout; callers can capture it in files or CI summaries.
 
 ## Related
-- Index: `../README.md`
+- `tools/report/New-LVCompareReport.ps1`
+- `tools/report/New-MissingInProjectReport.ps1`

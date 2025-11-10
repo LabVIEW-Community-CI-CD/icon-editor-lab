@@ -1,23 +1,25 @@
 # Assert-NoAmbiguousRemoteRefs.ps1
 
-**Path:** `icon-editor-lab-8/tools/Assert-NoAmbiguousRemoteRefs.ps1`  
-**Hash:** `1ac82d498a67`
+**Path:** `tools/Assert-NoAmbiguousRemoteRefs.ps1`
 
 ## Synopsis
-Ensures the specified remote does not publish multiple refs (branch/tag)
+Fails fast when a Git remote publishes branches and tags that share the same short name, preventing ambiguous fetch/checkout behavior in CI.
 
 ## Description
-`git checkout` / `git fetch` operations become ambiguous when a remote
+- Runs `git ls-remote --heads --tags <remote>` and groups the advertised refs by their short name (e.g., `release/24.1`).
+- If the same short name exists in multiple namespaces (branch + tag, annotated tag + lightweight tag, etc.), the script throws with a detailed list so the collision can be resolved before the pipeline relies on it.
+- Zero output when the remote is clean; verbose logs help when running with `-Verbose`.
+- Used by bundle/export pipelines to guarantee deterministic fetches before cloning fixtures.
 
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+### Parameters
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `Remote` | string | `origin` | Remote to inspect; must be reachable by `git`. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` when no ambiguous refs are detected.
+- `!=0` when `git` is unavailable, `ls-remote` fails, or duplicate short names exist.
 
 ## Related
-- Index: `../README.md`
+- `docs/LABVIEW_GATING.md`
+- `tools/Get-BranchProtectionRequiredChecks.ps1`

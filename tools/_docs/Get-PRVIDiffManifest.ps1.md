@@ -1,23 +1,29 @@
 # Get-PRVIDiffManifest.ps1
 
-**Path:** `icon-editor-lab-8/tools/Get-PRVIDiffManifest.ps1`  
-**Hash:** `5322e34700ae`
+**Path:** `tools/Get-PRVIDiffManifest.ps1`
 
 ## Synopsis
-Generates a manifest of VI path pairs for pull-request comparisons.
+Builds a `vi-diff-manifest@v1` JSON describing VI changes between two git refs, with optional ignore patterns or dry-run summaries.
 
 ## Description
-This is the initial scaffold for issue #324. The script will eventually detect
+- Runs `git diff --name-status` between `-BaseRef` and `-HeadRef`, filters files by VI extensions, and classifies each entry as `added`, `modified`, `deleted`, or `renamed` (capturing rename scores when available).
+- `-IgnorePattern` accepts wildcard globs applied to both base/head paths.
+- `-DryRun` prints a table instead of JSON so you can preview the manifest before saving.
+- By default, writes the JSON to stdout; `-OutputPath` saves it to disk (directories auto-created).
 
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+### Parameters
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `BaseRef` | string (required) | - | Baseline commit/branch/tag. |
+| `HeadRef` | string (required) | - | Target commit/branch/tag with changes. |
+| `OutputPath` | string | *stdout* | Destination for manifest JSON. |
+| `IgnorePattern` | string[] | *none* | Wildcard globs to skip (e.g., `tests/*`). |
+| `DryRun` | switch | Off | Print human-readable summary instead of JSON. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` when manifest/dry-run completes.
+- Non-zero when git commands fail or refs are invalid.
 
 ## Related
-- Index: `../README.md`
+- `tools/compare/Find-VIComparisonCandidates.ps1`
+- `docs/LVCOMPARE_LAB_PLAN.md`

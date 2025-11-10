@@ -1,29 +1,28 @@
 # Check-TrackedBuildArtifacts.ps1
 
-**Path:** `icon-editor-lab-8/tools/Check-TrackedBuildArtifacts.ps1`  
-**Hash:** `2fa055eaa0f5`
+**Path:** `tools/Check-TrackedBuildArtifacts.ps1`
 
 ## Synopsis
-Fails when tracked build artifacts are present in the repository.
+Fails CI when `git ls-files` reveals build outputs (`src/**/obj`, `src/**/bin`, `**/TestResults`) that should remain untracked.
 
 ## Description
-Scans git-tracked files for common build output locations and test result folders:
-
+- Normalizes tracked paths to forward slashes, then checks them against a fixed set of globs that catch common .NET build folders and test-result directories.
+- Supports allowlists in three forms (combined at runtime):
+  - `-AllowPatterns` argument (PowerShell wildcards)
+  - `ALLOWLIST_TRACKED_ARTIFACTS` environment variable (semicolon separated)
+  - `-AllowListPath` file (one glob per line; defaults to `.ci/build-artifacts-allow.txt`)
+- When offenders are found, each path is logged, and a Markdown snippet is appended to `GITHUB_STEP_SUMMARY` for PR visibility. Exits with code `3` so workflows can distinguish “gating failure” from script crashes.
 
 ### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `AllowPatterns` | string[] |  |
-| `AllowListPath` | string | '.ci/build-artifacts-allow.txt' |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `AllowPatterns` | string[] | *none* | Extra glob patterns to treat as allowed. |
+| `AllowListPath` | string | `.ci/build-artifacts-allow.txt` | Optional file containing allowlisted globs (comments with `#` ignored). |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` when no tracked build artifacts match.
+- `3` when offenders are detected.
+- Other values bubble up if `git ls-files` fails.
 
 ## Related
-- Index: `../README.md`
+- `docs/LABVIEW_GATING.md`

@@ -1,23 +1,14 @@
 # ConsoleWatch.ps1
 
-**Path:** `icon-editor-lab-8/tools/ConsoleWatch.ps1`  
-**Hash:** `22dde1423c7e`
+**Path:** `tools/ConsoleWatch.ps1`
 
 ## Synopsis
-—
+Entry script that imports `ConsoleWatch.psm1` so `Start-ConsoleWatch` / `Stop-ConsoleWatch` are available for CI jobs that need to monitor console process spawns.
 
 ## Description
-—
-
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+- Thin wrapper that sets strict mode and imports the module; call `.\tools\ConsoleWatch.ps1` (dot-source or via `pwsh -File`) to make `Start-ConsoleWatch`/`Stop-ConsoleWatch` available in the current session.
+- The actual watch functionality lives in `ConsoleWatch.psm1`; see that doc for parameters and outputs.
 
 ## Related
-- Index: `../README.md`
+- `tools/ConsoleWatch.psm1`
+- `tools/ConsoleUx.psm1`

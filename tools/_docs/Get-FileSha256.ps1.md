@@ -1,23 +1,23 @@
 # Get-FileSha256.ps1
 
-**Path:** `icon-editor-lab-8/tools/Get-FileSha256.ps1`  
-**Hash:** `6789a405be2f`
+**Path:** `tools/Get-FileSha256.ps1`
 
 ## Synopsis
-Compute the SHA-256 digest for a file.
+Computes the SHA-256 digest of a file, outputting hex (default) or Base64.
 
 ## Description
-—
+- Validates that `-Path` points to a file, resolves it to an absolute path, and streams it through `System.Security.Cryptography.SHA256`.
+- `-AsBase64` switches the output format from the default lowercase hex string to Base64.
+- Handy for verifying bundle contents before publishing artifacts or for doc tables that include checksum columns.
 
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+### Parameters
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `Path` | string (required) | - | File to hash. |
+| `AsBase64` | switch | Off | Emit Base64 digest instead of hex. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` on success; errors are thrown for missing files.
 
 ## Related
-- Index: `../README.md`
+- `tools/Export-LabTooling.ps1`

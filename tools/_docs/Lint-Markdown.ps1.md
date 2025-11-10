@@ -1,29 +1,25 @@
 # Lint-Markdown.ps1
 
-**Path:** `icon-editor-lab-8/tools/Lint-Markdown.ps1`  
-**Hash:** `5fe8a96de6c2`
+**Path:** `tools/Lint-Markdown.ps1`
 
 ## Synopsis
-—
+Runs `markdownlint-cli2` (or `npx markdownlint-cli2`) against changed or all Markdown files, respecting `.markdownlint.jsonc` and ignore patterns.
 
 ## Description
-—
-
+- Determines the repo root, collects Markdown files from `git diff` (merge-base vs `-BaseRef`) unless `-All` is specified, then filters out ignored paths (`.markdownlintignore`, `CHANGELOG.md`, etc.).
+- Invokes `markdownlint-cli2` if installed locally, otherwise falls back to `npx --no-install markdownlint-cli2`.
+- Treats MD041/MD013 violations as warnings (returns 0) while other rule failures propagate the linter’s exit code.
 
 ### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `All` | switch |  |
-| `BaseRef` | string |  |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `All` | switch | Off | Lint every tracked Markdown file. |
+| `BaseRef` | string | auto | Git ref used to compute changed files (fallback: `origin/develop`, `HEAD~1`, etc.). |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` when lint passes or only “warning” rules (MD041/MD013) are triggered.
+- Linter exit code when other rules fail.
 
 ## Related
-- Index: `../README.md`
+- `.markdownlint.jsonc`
+- `.markdownlintignore`

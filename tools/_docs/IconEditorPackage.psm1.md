@@ -1,28 +1,18 @@
 # IconEditorPackage.psm1
 
-**Path:** `icon-editor-lab-8/tools/icon-editor/IconEditorPackage.psm1`  
-**Hash:** `fd75540e333b`
+**Path:** `tools/icon-editor/IconEditorPackage.psm1`
 
 ## Synopsis
-Requires -Version 7.0
+Helpers for building and publishing icon-editor VIP packages: resolves vendor roots, loads VendorTools/GCli/VIPM modules, and orchestrates g-cli operations.
 
 ## Description
-—
-
-
-### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `WorkspaceRoot` | string |  |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+- Resolves the repo root (`vendor/icon-editor`) and log directories, then imports supporting modules (`VendorTools.psm1`, `GCli.psm1`, `Vipm.psm1`) on demand.
+- Key functions include:
+  - `Get-IconEditorPackageName/Path` – derive VIP filenames from `.vipb` buildspecs and version numbers.
+  - `Invoke-IconEditorProcess` – wrapper around g-cli/VIPM commands for consistent logging.
+  - VIP build/install helpers that call g-cli providers (see `tools/GCli.psm1`).
+- Used by packaging scripts to ensure g-cli and VIPM operations share consistent configuration and logging.
 
 ## Related
-- Index: `../README.md`
+- `tools/Invoke-VipmCliBuild.ps1`
+- `tools/icon-editor/IconEditorDevMode.psm1`

@@ -1,23 +1,29 @@
 # Local-Runbook.ps1
 
-**Path:** `icon-editor-lab-8/tools/Local-Runbook.ps1`  
-**Hash:** `94820148e1e1`
+**Path:** `tools/Local-Runbook.ps1`
 
 ## Synopsis
-Default phases for local sanity runs
+Runs the integration runbook locally with lightweight profiles (quick/compare/loop) before pushing to CI.
 
 ## Description
-—
+- Sets `RUNBOOK_LOOP_*` environment variables (iterations=1, quick loop) and calls `scripts/Invoke-IntegrationRunbook.ps1` with the requested phases.
+- Profiles (`quick`, `compare`, `loop`, `full`) map to common phase sets; specify `-Phases` or `-All` to override, and `-IncludeLoop` to append the `Loop` phase.
+- `-FailOnDiff` causes loop diffs to fail locally; `-JsonReport` captures the runbook summary; `-PassThru` forwards the runbook’s detailed result object.
 
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+### Parameters
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `All` | switch | Off | Run all phases without filtering. |
+| `Phases` | string[] | profile-based | Explicit comma-separated phases (Prereqs, ViInputs, Compare, Loop, etc.). |
+| `Profile` | string | `quick` | Named profile to run (`quick`, `compare`, `loop`, `full`). |
+| `IncludeLoop` | switch | Off | Append the `Loop` phase to the selected set. |
+| `FailOnDiff` | switch | Off | Sets `RUNBOOK_LOOP_FAIL_ON_DIFF=1`. |
+| `JsonReport` | string | - | Destination JSON report (forwarded to the runbook). |
+| `PassThru` | switch | Off | Returns the runbook result object. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- Mirrors `scripts/Invoke-IntegrationRunbook.ps1` (non-zero when phases fail).
 
 ## Related
-- Index: `../README.md`
+- `scripts/Invoke-IntegrationRunbook.ps1`
+- `tools/Local-RunTests.ps1`

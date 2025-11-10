@@ -1,28 +1,28 @@
 # New-MissingInProjectReport.ps1
 
-**Path:** `icon-editor-lab-8/tools/report/New-MissingInProjectReport.ps1`  
-**Hash:** `b589bd0b0dab`
+**Path:** `tools/report/New-MissingInProjectReport.ps1`
 
 ## Synopsis
-Requires -Version 7.0
+Produces a Markdown snippet summarizing Missing-In-Project suite runs (command, transcript, summary, telemetry, warnings).
 
 ## Description
-—
-
+- Same structure as the other `New-*Report.ps1` helpers, but the heading reads “MissingInProject Suite”.
+- Intended for copy/paste workflows when attaching MIP evidence to an issue or README; just feed the script the command, transcript, summary text (usually Pester output), telemetry file path, and warnings/errors.
+- Outputs a self-contained Markdown block you can append to session index summaries.
 
 ### Parameters
 | Name | Type | Default |
-|---|---|---|
-| `Label` | string | ("missinginproject-{0}" -f (Get-Date -Format 'yyyyMMddTHHmmss' |
+| --- | --- | --- |
+| `Label` | string | `missinginproject-<timestamp>` |
+| `Command` | string | `<paste command>` |
+| `Transcript` | string | `<path>` |
+| `Summary` | string | `<paste Pester summary>` |
+| `Warnings` | string | `<warnings/errors>` |
+| `Telemetry` | string | `<optional telemetry>` |
 
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+## Outputs
+- Markdown string emitted to stdout.
 
 ## Related
-- Index: `../README.md`
+- `tools/report/New-LVCompareReport.ps1`
+- `tools/report/New-HostPrepReport.ps1`

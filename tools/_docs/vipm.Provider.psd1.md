@@ -1,23 +1,15 @@
 # vipm.Provider.psd1
 
-**Path:** `icon-editor-lab-8/tools/providers/vipm/vipm.Provider.psd1`  
-**Hash:** `2ec0cceb8d62`
+**Path:** `tools/providers/vipm/vipm.Provider.psd1`
 
 ## Synopsis
-Module manifest for module 'vipm.Provider'
+Manifest that packages the classic VIPM provider (`Provider.psm1`) for auto-registration with `tools/LabVIEWCli.psm1` and bundle exports.
 
 ## Description
-of the functionality provided by this module
-
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+- Declares `RootModule = 'Provider.psm1'`, `ModuleVersion = 0.0.1`, and GUID `2ec0cceb-8d62-4b1a-9a73-...` so bundle consumers can track which provider revision shipped.
+- `FunctionsToExport = '*'`, ensuring `New-LVProvider` is visible when `LabVIEWCli.psm1` enumerates provider modules under `tools/providers/*`.
+- Metadata (Author `compare-vi-cli-action`, Company `LabVIEW Community CI/CD`) aligns with the artifacts produced by `tools/Export-LabTooling.ps1`.
 
 ## Related
-- Index: `../README.md`
+- `tools/providers/vipm/Provider.psm1`
+- `tools/LabVIEWCli.psm1`

@@ -1,23 +1,26 @@
 # Binding-MinRepro.ps1
 
-**Path:** `icon-editor-lab-8/tools/Binding-MinRepro.ps1`  
-**Hash:** `1a4702c209f9`
+**Path:** `tools/Binding-MinRepro.ps1`
 
 ## Synopsis
-Binding-MinRepro.ps1
+Minimal deterministic harness for parameter-binding tests; emits predictable `[repro]` output whether `-Path` resolves or not.
 
 ## Description
-—
+- When `-Path` is omitted or points to a non-existent file, writes a single `[repro] ...` line (warning suppressed) so Pester assertions can `Should -Match` without brittle indexing.
+- When a valid path is supplied, dumps the raw args, `PSBoundParameters` keys, and the resolved path; optional verbose diagnostics add PSVersion, host, loaded modules, and profile info to help reproduce binding issues.
+- `-VerboseDiagnostics` can also be toggled via `BINDING_MINREPRO_VERBOSE=1` to avoid editing tests.
 
+### Parameters
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `Path` | string | *none* | File path being tested; missing/invalid paths still produce deterministic output. |
+| `VerboseDiagnostics` | switch | Off | Adds environment context (PSVersion, modules, profiles); also enabled via `BINDING_MINREPRO_VERBOSE`. |
 
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+## Outputs
+- `[repro] ...` lines suitable for `Should -Match`; warnings are suppressed to keep a single line when the path is missing/invalid.
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` unless an unexpected exception occurs.
 
 ## Related
-- Index: `../README.md`
+- `tests/Binding-MinRepro.Tests.ps1`

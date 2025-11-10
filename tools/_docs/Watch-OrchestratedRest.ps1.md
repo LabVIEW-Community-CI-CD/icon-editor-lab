@@ -1,34 +1,30 @@
 # Watch-OrchestratedRest.ps1
 
-**Path:** `icon-editor-lab-8/tools/Watch-OrchestratedRest.ps1`  
-**Hash:** `8c2737f05216`
+**Path:** `tools/Watch-OrchestratedRest.ps1`
 
 ## Synopsis
-Wrapper for the REST watcher that writes watcher-rest.json and merges it into session-index.json.
+Runs the orchestrated-run REST watcher (Node JS) to monitor GitHub Actions workflows and merges the summary into `session-index.json`.
 
 ## Description
-Invokes the compiled Node watcher (dist/tools/watchers/orchestrated-watch.js) with robust defaults
-
+- Ensures `dist/tools/watchers/orchestrated-watch.js` exists (invokes `npx tsc -p tsconfig.cli.json` when missing).
+- Polls the GitHub Actions REST API for a specific run (`-RunId`) or the latest run on a branch (`-Branch` + `-Workflow`).
+- Writes the watcher summary to `tests/results/_agent/watcher-rest.json` (override via `-OutPath`) and then calls `tools/Update-SessionIndexWatcher.ps1` so the data appears under `watchers.rest` in `session-index.json`.
+- Tolerates transient API failures via `-PollMs`, `-ErrorGraceMs`, and `-NotFoundGraceMs`.
 
 ### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `RunId` | int |  |
-| `Branch` | string |  |
-| `Workflow` | string | '.github/workflows/ci-orchestrated.yml' |
-| `PollMs` | int | 15000 |
-| `ErrorGraceMs` | int | 120000 |
-| `NotFoundGraceMs` | int | 90000 |
-| `OutPath` | string | 'tests/results/_agent/watcher-rest.json' |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `RunId` | int | - | Workflow run id to follow. |
+| `Branch` | string | - | Branch to watch when `RunId` isn’t provided. |
+| `Workflow` | string | `.github/workflows/ci-orchestrated.yml` | Workflow file to filter branch runs. |
+| `PollMs` | int | `15000` | Poll interval. |
+| `ErrorGraceMs` | int | `120000` | Grace window for repeated API errors. |
+| `NotFoundGraceMs` | int | `90000` | Grace window for 404 responses. |
+| `OutPath` | string | `tests/results/_agent/watcher-rest.json` | Output summary path. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- Mirrors the Node watcher exit code (0=success, non-zero when the watcher fails).
 
 ## Related
-- Index: `../README.md`
+- `tools/Update-SessionIndexWatcher.ps1`
+- `dist/tools/watchers/orchestrated-watch.js`

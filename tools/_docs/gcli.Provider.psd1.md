@@ -1,23 +1,15 @@
 # gcli.Provider.psd1
 
-**Path:** `icon-editor-lab-8/tools/providers/gcli/gcli.Provider.psd1`  
-**Hash:** `f94e61bab402`
+**Path:** `tools/providers/gcli/gcli.Provider.psd1`
 
 ## Synopsis
-Module manifest for module 'gcli.Provider'
+Manifest for the g-cli provider module that registers VIPB/VIPC operations with the GCli facade.
 
 ## Description
-of the functionality provided by this module
-
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+- Sets `RootModule = 'Provider.psm1'` and exports `New-GCliProvider` so `tools/GCli.psm1` can dynamically load the provider.
+- Metadata identifies the provider (`compare-vi-cli-action`, version `0.0.1`, GUID `366f69cc-56a7-4b9f-aa74-b84d89df7bf2`) used during bundle exports.
+- No commands are exported directly; the Provider module supplies a script object consumed by the GCli dispatcher.
 
 ## Related
-- Index: `../README.md`
+- `tools/providers/gcli/Provider.psm1`
+- `tools/GCli.psm1`

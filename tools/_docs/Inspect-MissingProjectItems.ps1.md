@@ -1,30 +1,25 @@
 # Inspect-MissingProjectItems.ps1
 
-**Path:** `icon-editor-lab-8/tools/icon-editor/Inspect-MissingProjectItems.ps1`  
-**Hash:** `639ce4fa2033`
+**Path:** `tools/icon-editor/Inspect-MissingProjectItems.ps1`
 
 ## Synopsis
-Requires -Version 7.0
+Scans the icon-editor LabVIEW project for missing file references and emits a JSON report listing unresolved URLs.
 
 ## Description
-—
-
+- Defaults to `vendor/icon-editor/lv_icon_editor.lvproj` unless `-ProjectPath` overrides it.
+- Resolves each `<Item URL="...">` entry (skipping resource/labview.exe entries) to an absolute path; records entries whose files don’t exist.
+- Writes a JSON summary (`missing-items.json` under `tests/results/_agent/icon-editor` by default) containing `projectPath`, `generatedAt`, and an array of missing items (`name`, `url`, `resolvedPath`).
 
 ### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `ProjectPath` | string |  |
-| `OutputPath` | string |  |
-| `RepoRoot` | string |  |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `ProjectPath` | string | `vendor/icon-editor/lv_icon_editor.lvproj` | Project to inspect. |
+| `OutputPath` | string | `tests/results/_agent/icon-editor/missing-items.json` | Destination report path. |
+| `RepoRoot` | string | auto | Repo root override (used when script runs outside repo root). |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` when scan completes (missing files still yield 0).
+- Throws when the project file cannot be read.
 
 ## Related
-- Index: `../README.md`
+- `tools/icon-editor/Invoke-MissingInProjectSuite.ps1`

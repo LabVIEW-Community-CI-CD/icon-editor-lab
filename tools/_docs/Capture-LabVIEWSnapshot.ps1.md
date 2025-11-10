@@ -1,29 +1,29 @@
 # Capture-LabVIEWSnapshot.ps1
 
-**Path:** `icon-editor-lab-8/tools/Capture-LabVIEWSnapshot.ps1`  
-**Hash:** `5813d10631d6`
+**Path:** `tools/Capture-LabVIEWSnapshot.ps1`
 
 ## Synopsis
-Capture a snapshot of active LabVIEW.exe processes for diagnostics.
+Captures a JSON snapshot of running `LabVIEW.exe` and `LVCompare.exe` processes for diagnostics/warmup telemetry.
 
 ## Description
-Enumerates LabVIEW.exe processes (if any) and writes a JSON report capturing
-
+- Enumerates active LabVIEW/LVCompare processes (best-effort) and records PID, start time, CPU seconds, working set, private bytes, and responsiveness.
+- Writes the snapshot to `tests/results/_warmup/labview-processes.json` by default (directories are auto-created). The schema is `labview-process-snapshot/v1`.
+- Designed to run before/after warmups so CI can make informed decisions about closing or reusing LabVIEW.
+- `-Quiet` suppresses `[labview-snapshot]` console logs.
 
 ### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `OutputPath` | string | 'tests/results/_warmup/labview-processes.json' |
-| `Quiet` | switch |  |
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `OutputPath` | string | `tests/results/_warmup/labview-processes.json` | Destination JSON file (absolute or relative). |
+| `Quiet` | switch | Off | Suppress progress logging. |
 
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+## Outputs
+- JSON snapshot with top-level counts plus detailed process objects for LabVIEW and LVCompare.
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` on success (missing processes are treated as empty arrays, not errors).
+- Non-zero if the snapshot file cannot be written.
 
 ## Related
-- Index: `../README.md`
+- `tools/Close-LabVIEW.ps1`
+- `docs/LABVIEW_GATING.md`

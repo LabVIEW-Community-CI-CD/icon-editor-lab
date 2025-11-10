@@ -1,23 +1,27 @@
 # Generate-ActionOutputsDoc.ps1
 
-**Path:** `icon-editor-lab-8/tools/Generate-ActionOutputsDoc.ps1`  
-**Hash:** `fcb0852e5469`
+**Path:** `tools/Generate-ActionOutputsDoc.ps1`
 
 ## Synopsis
-Generate markdown documentation for composite action inputs & outputs.
+Parses `action.yml` and regenerates `docs/action-outputs.md`, documenting the composite action’s inputs/outputs.
 
 ## Description
-Uses built-in ConvertFrom-Yaml (PowerShell 7+) to parse action.yml and emit
+- Requires PowerShell 7 (for `ConvertFrom-Yaml`). Reads `action.yml`, iterates over `inputs` and `outputs`, and writes a Markdown file listing each entry’s description, required flag, and default.
+- Defaults:
+  - `-ActionPath` → `<repo>/action.yml`
+  - `-OutputPath` → `docs/action-outputs.md`
+- Creates the destination directory if needed and overwrites the file each run. Safe for both local and CI use, often run as part of release prep before exporting the tooling bundle.
 
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+### Parameters
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `ActionPath` | string | `action.yml` | Path to the composite action definition. |
+| `OutputPath` | string | `docs/action-outputs.md` | Markdown output path. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` on success.
+- `1` when `ConvertFrom-Yaml` is unavailable or `action.yml` cannot be read.
 
 ## Related
-- Index: `../README.md`
+- `docs/action-outputs.md`
+- `tools/Export-LabTooling.ps1`

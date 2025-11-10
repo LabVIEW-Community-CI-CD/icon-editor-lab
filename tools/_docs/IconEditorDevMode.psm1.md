@@ -1,28 +1,18 @@
 # IconEditorDevMode.psm1
 
-**Path:** `icon-editor-lab-8/tools/icon-editor/IconEditorDevMode.psm1`  
-**Hash:** `70dcac072940`
+**Path:** `tools/icon-editor/IconEditorDevMode.psm1`
 
 ## Synopsis
-Requires -Version 7.0
+Utility module for managing icon-editor dev-mode state: resolve repo paths, write/read dev-mode state JSON, and run rogue-process checks.
 
 ## Description
-—
-
-
-### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `StartPath` | string | (Get-Location |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+- Resolves the vendor icon-editor repo root (`vendor/icon-editor`) and keeps the dev-mode state file at `tests/results/_agent/icon-editor/dev-mode-state.json`.
+- Provides helpers:
+  - `Resolve-IconEditorRepoRoot` / `Resolve-IconEditorRoot` – find repo/vendor paths.
+  - `Get-IconEditorDevModeState` / `Set-IconEditorDevModeState` – read/write `icon-editor/dev-mode-state@v1`.
+  - `Invoke-IconEditorRogueCheck` – call `tools/Detect-RogueLV.ps1` with optional auto-close/fail-on-rogue behavior.
+- Used by scripts like `Enable-DevMode`, `Disable-DevMode`, and `Test-DevModeStability` to keep state consistent across runs.
 
 ## Related
-- Index: `../README.md`
+- `tools/icon-editor/Enable-DevMode.ps1`
+- `tools/Detect-RogueLV.ps1`

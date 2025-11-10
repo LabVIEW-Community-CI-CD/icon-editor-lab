@@ -1,28 +1,28 @@
 # Diagnose-LabVIEWSetup.ps1
 
-**Path:** `icon-editor-lab-8/tools/Diagnose-LabVIEWSetup.ps1`  
-**Hash:** `55a5734fe987`
+**Path:** `tools/Diagnose-LabVIEWSetup.ps1`
 
 ## Synopsis
-Requires -Version 7.0
+Checks whether required LabVIEW/VIPM toolchains are installed for source, report, and packaging lanes, emitting a readiness report.
 
 ## Description
-—
-
+- Imports `VendorTools.psm1` to discover LabVIEW 2021/2025 installs, LVCompare, LabVIEWCLI, G-CLI, and VIPM.
+- Builds three “lanes”:
+  - `source` (LabVIEW 2021 x86/x64 + G-CLI)
+  - `report` (LabVIEW 2025 x64, LabVIEWCLI, LVCompare)
+  - `packaging` (LabVIEW 2021 x86 + VIPM)
+- Prints a colorized summary indicating which requirements are present; exits non-zero if any lane is missing prerequisites.
+- `-Json` returns the structured readiness object (useful for CI artifacts).
 
 ### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `Json` | switch |  |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `Json` | switch | Off | Emit JSON (`lanes[]` with `requirements` and `missing`) instead of console output. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` when all lanes are ready.
+- `1` when any required toolchain is missing.
 
 ## Related
-- Index: `../README.md`
+- `tools/VendorTools.psm1`
+- `docs/LABVIEW_GATING.md`

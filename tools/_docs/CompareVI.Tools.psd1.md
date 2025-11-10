@@ -1,23 +1,16 @@
 # CompareVI.Tools.psd1
 
-**Path:** `icon-editor-lab-8/tools/CompareVI.Tools/CompareVI.Tools.psd1`  
-**Hash:** `3801edb076f9`
+**Path:** `tools/CompareVI.Tools/CompareVI.Tools.psd1`
 
 ## Synopsis
-—
+Manifest for the CompareVI helper module that exposes `Invoke-CompareVIHistory` and `Invoke-CompareRefsToTemp`.
 
 ## Description
-—
-
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+- Declares `CompareVI.Tools.psm1` as the root module (PowerShell 5.1) with version `0.1.0`.
+- Limits exports to the two wrapper functions so bundle consumers can `Import-Module tools/CompareVI.Tools` and call them without extra surface area.
+- Captures provenance metadata (LabVIEW Community authorship, `compare-vi-cli-action` project URI) for ISO traceability.
 
 ## Related
-- Index: `../README.md`
+- `tools/CompareVI.Tools/CompareVI.Tools.psm1`
+- `tools/Compare-RefsToTemp.ps1`
+- `tools/Compare-VIHistory.ps1`

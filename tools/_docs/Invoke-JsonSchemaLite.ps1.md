@@ -1,23 +1,25 @@
 # Invoke-JsonSchemaLite.ps1
 
-**Path:** `icon-editor-lab-8/tools/Invoke-JsonSchemaLite.ps1`  
-**Hash:** `dcf26156c42f`
+**Path:** `tools/Invoke-JsonSchemaLite.ps1`
 
 ## Synopsis
-When the supplied schema declares a const value that does not match the JSON payload's
+Validates a JSON file against a “schema-lite” definition (custom JSON schema subset) with automatic schema fallback when the payload’s `schema` id disagrees.
 
 ## Description
-—
+- Accepts `-JsonPath` and `-SchemaPath`; loads both as JSON and performs structural checks (types, required fields, enum/const values).
+- If the schema’s `const` doesn’t match the payload’s `schema` field, the script looks for a sibling `<schema>.schema.json` file matching the payload id and uses it automatically (handles schema migrations).
+- Emits descriptive errors to stderr and exits `2` for parse/validation failures; returns `0` on success.
 
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+### Parameters
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `JsonPath` | string (required) | - | Target JSON file to validate. |
+| `SchemaPath` | string (required) | - | Schema-lite JSON file. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` when validation succeeds.
+- `2` for parse errors or validation failures.
 
 ## Related
-- Index: `../README.md`
+- `tools/Validate-Fixtures.ps1`
+- `docs/schemas/`

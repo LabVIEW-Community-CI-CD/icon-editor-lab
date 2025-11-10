@@ -1,23 +1,18 @@
 # GCli.psm1
 
-**Path:** `icon-editor-lab-8/tools/GCli.psm1`  
-**Hash:** `0991d3956566`
+**Path:** `tools/GCli.psm1`
 
 ## Synopsis
-Requires -Version 7.0
+Facade for g-cli providers: discovers provider modules, registers them, and exposes helper functions to resolve binaries and build argument lists for VIPB/VIPC operations.
 
 ## Description
-—
-
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+- Imports all provider modules under `tools/providers/*/` (e.g., `providers/gcli/Provider.psm1`), calling each module’s `New-GCliProvider` to register operations like `VipbBuild` or `VipcInstall`.
+- Exposes helper functions:
+  - `Register-GCliProvider` – adds a provider object that implements `Name()`, `ResolveBinaryPath()`, `Supports()`, and `BuildArgs()`.
+  - `Get-GCliProviders` / `Get-GCliProviderByName` – enumerate or retrieve providers.
+  - `Import-GCliProviderModules` – auto-loads available providers at runtime; invoked when the module is imported.
+- Used by toolchain scripts (`Invoke-VipmCliBuild`, `IconEditorPackage` automation) to build g-cli command lines consistently.
 
 ## Related
-- Index: `../README.md`
+- `tools/providers/gcli/Provider.psm1`
+- `tools/Invoke-VipmCliBuild.ps1`

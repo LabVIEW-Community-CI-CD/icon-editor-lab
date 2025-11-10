@@ -1,28 +1,28 @@
 # New-UnitTestReport.ps1
 
-**Path:** `icon-editor-lab-8/tools/report/New-UnitTestReport.ps1`  
-**Hash:** `ef99f569fbc3`
+**Path:** `tools/report/New-UnitTestReport.ps1`
 
 ## Synopsis
-Requires -Version 7.0
+Writes a Markdown summary for unit-test runs (command, summary text, transcript, telemetry, warnings).
 
 ## Description
-—
-
+- Formats output identical to the other `New-*Report.ps1` helpers but labels the section “Unit Test Suite”.
+- Feed it the command line, transcript path, unit-test telemetry (e.g., JUnit XML), summary text, and warnings to get a ready-to-share Markdown block.
+- Useful for capturing unit-test evidence when handing off between agents or commenting on PRs.
 
 ### Parameters
 | Name | Type | Default |
-|---|---|---|
-| `Label` | string | ("unit-tests-{0}" -f (Get-Date -Format 'yyyyMMddTHHmmss' |
+| --- | --- | --- |
+| `Label` | string | `unit-tests-<timestamp>` |
+| `Command` | string | `<paste command>` |
+| `Transcript` | string | `<path>` |
+| `Telemetry` | string | `<UnitTestReport.xml path>` |
+| `Summary` | string | `<paste summary block>` |
+| `Warnings` | string | `<warnings/errors>` |
 
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+## Outputs
+- Markdown string printed to stdout.
 
 ## Related
-- Index: `../README.md`
+- `tools/report/New-LVCompareReport.ps1`
+- `tools/report/New-HostPrepReport.ps1`

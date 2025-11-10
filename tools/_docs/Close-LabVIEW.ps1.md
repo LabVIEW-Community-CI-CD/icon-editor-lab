@@ -1,29 +1,31 @@
 # Close-LabVIEW.ps1
 
-**Path:** `icon-editor-lab-8/tools/Close-LabVIEW.ps1`  
-**Hash:** `9ca1649fffc7`
+**Path:** `tools/Close-LabVIEW.ps1`
 
 ## Synopsis
-Gracefully closes a running LabVIEW instance using the provider-agnostic CLI abstraction.
+Gracefully close a LabVIEW instance via the provider-agnostic `LabVIEWCli.psm1` abstraction (LabVIEWCLI today, g-cli in the future).
 
 ## Description
-Routes the CloseLabVIEW operation through tools/LabVIEWCli.psm1, which selects an available provider
-
+- Imports `LabVIEWCli.psm1` and builds the correct parameter set (`labviewPath`, `labviewVersion`, `labviewBitness`).
+- Optionally overrides `LABVIEWCLI_PATH` for the duration of the call (`-LabVIEWCliPath`) and allows forcing a specific provider via `-Provider`.
+- Runs `Invoke-LVOperation -Operation CloseLabVIEW`, emits the command/provider used, and treats “no connection” errors as success (already closed).
+- Supports a `-Preview` mode that returns the resolved command without executing it.
 
 ### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `LabVIEWExePath` | string |  |
-| `MinimumSupportedLVVersion` | string |  |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `LabVIEWExePath` | string | Resolved automatically | Explicit path to `LabVIEW.exe`. |
+| `MinimumSupportedLVVersion` | string | — | Used when resolving LabVIEW path (e.g., `2023`). |
+| `SupportedBitness` | string (`32`,`64`) | — | Bitness for auto resolution. |
+| `LabVIEWCliPath` | string | — | Override `LabVIEWCLI.exe` path (sets `LABVIEWCLI_PATH`). |
+| `Provider` | string | `auto` | Force a specific CLI provider if needed. |
+| `Preview` | switch | Off | Show the command without closing LabVIEW. |
 
 ## Exit Codes
-- `0` success  
-- `!=0` failure
+- `0` — LabVIEW is closed (or was already closed).
+- `1` — Provider failed; see error message for details.
 
 ## Related
-- Index: `../README.md`
+- `tools/Close-LVCompare.ps1`
+- `tools/Detect-RogueLV.ps1`
+- `docs/LABVIEW_GATING.md`

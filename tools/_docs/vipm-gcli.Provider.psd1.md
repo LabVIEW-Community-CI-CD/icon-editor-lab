@@ -1,23 +1,16 @@
 # vipm-gcli.Provider.psd1
 
-**Path:** `icon-editor-lab-8/tools/providers/vipm-gcli/vipm-gcli.Provider.psd1`  
-**Hash:** `30bcd79aeb43`
+**Path:** `tools/providers/vipm-gcli/vipm-gcli.Provider.psd1`
 
 ## Synopsis
-—
+Manifest for the VIPM g-cli provider so `tools/LabVIEWCli.psm1` can discover and register the g-cli backend.
 
 ## Description
-—
-
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+- Sets `RootModule = 'Provider.psm1'` and exports every function, exposing the provider’s `New-LVProvider` factory to LabVIEWCli’s auto-loader.
+- Captures module identity (version, GUID, author `compare-vi-cli-action`) used when `tools/Export-LabTooling.ps1` bundles provider metadata.
+- Enables scripts to select `Provider=vipm-gcli` (e.g., `Invoke-VipmDependencies.ps1`, `Invoke-ProviderComparison.ps1`) so VIPM operations run through the g-cli wrapper instead of desktop VIPM.
 
 ## Related
-- Index: `../README.md`
+- `tools/providers/vipm-gcli/Provider.psm1`
+- `tools/LabVIEWCli.psm1`
+- `tools/Vipm/Invoke-ProviderComparison.ps1`

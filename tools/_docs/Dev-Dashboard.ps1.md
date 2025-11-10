@@ -1,35 +1,30 @@
 # Dev-Dashboard.ps1
 
-**Path:** `icon-editor-lab-8/tools/Dev-Dashboard.ps1`  
-**Hash:** `3032dcdf27ec`
+**Path:** `tools/Dev-Dashboard.ps1`
 
 ## Synopsis
-—
+CLI entry point that renders the developer dashboard snapshot (JSON, HTML, or console report) by aggregating watch telemetry, queue data, LabVIEW snapshots, and stakeholder info.
 
 ## Description
-—
-
+- Imports `Dev-Dashboard.psm1`, then calls `Get-DashboardSnapshot` for the requested `-Group` (default `pester-selfhosted`).
+- Output options:
+  - Console report (default unless `-Quiet`).
+  - `-Html` writes an HTML report to `-HtmlPath` (default `tools/dashboard/dashboard.html`).
+  - `-Json` emits the snapshot JSON to stdout (or repeatedly when `-Watch > 0`).
+- `-Watch <seconds>` reruns the snapshot in a loop, clearing the console between iterations unless `-Quiet`.
+- `-ResultsRoot` overrides where telemetry is read from (otherwise auto-detected); `-StakeholderPath` injects owners/channels metadata for the summary.
 
 ### Parameters
-| Name | Type | Default |
-|---|---|---|
-| `Group` | string | 'pester-selfhosted' |
-| `Html` | switch |  |
-| `HtmlPath` | string |  |
-| `Json` | switch |  |
-| `Quiet` | switch |  |
-| `Watch` | int | 0 |
-| `ResultsRoot` | string |  |
-| `StakeholderPath` | string |  |
-
-
-## Preconditions
-- Ensure repo is checked out and dependencies are installed.
-- If script touches LabVIEW/VIPM, verify versions via environment vars or config.
-
-## Exit Codes
-- `0` success  
-- `!=0` failure
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `Group` | string | `pester-selfhosted` | Dashboard grouping (matches config entry). |
+| `Html` / `HtmlPath` | switch / string | Off / `tools/dashboard/dashboard.html` | Enable HTML output and optional destination. |
+| `Json` | switch | Off | Emit snapshot JSON (to stdout). |
+| `Quiet` | switch | Off | Suppress console report. |
+| `Watch` | int | `0` | Loop interval in seconds; 0 disables watch mode. |
+| `ResultsRoot` | string | auto | Where to read telemetry artifacts (`tests/results`). |
+| `StakeholderPath` | string | auto | Stakeholder mapping file. |
 
 ## Related
-- Index: `../README.md`
+- `tools/Dev-Dashboard.psm1`
+- `tests/results/_warmup/`, `_agent/`, `_watch/` (telemetry inputs)
