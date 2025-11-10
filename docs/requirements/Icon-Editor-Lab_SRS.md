@@ -90,14 +90,14 @@ Assumptions/dependencies are recorded per 29148. fileciteturn1file0
 All requirements are **necessary, unambiguous, singular, feasible, and verifiable** per 29148 §5.2.5 and are written in “what, not how” form per §5.2.7. Each requirement includes a verification method. fileciteturn1file13 fileciteturn1file10
 
 ### 9.1 Functional Requirements
-**IELA-SRS-F-001 (Dev Mode):** The system **shall** enable and disable LabVIEW *development mode* for specified versions and bitness and **shall** verify the resulting state before proceeding with any analyzer or compare action. *Verification:* Test (Pester) + Demonstration.  
+**IELA-SRS-F-001 (Dev Mode Lifecycle):** For every LabVIEW version/bitness pair requested by a caller, the system **shall** (a) execute a guarded enable sequence that performs rogue-process preflight, mutates the target LabVIEW configuration (`LocalHost.LibraryPaths`) and `dev-mode.txt`, and writes a verification payload identifying each target; (b) execute a disable sequence that removes the icon-editor path and confirms the token is off; and (c) refuse to start analyzer or compare stages unless the most recent verification payload reports `Active=true` for all requested targets. *Verification:* Test (Pester) + Demonstration.  
 **IELA-SRS-F-002 (Rogue Detection):** Before and after any stability iteration or suite run, the system **shall** detect rogue LabVIEW/LVCompare processes and, when requested, **shall** fail the run and emit `rogue-*.json` artifacts. *Verification:* Test + Inspection of artifacts.  
 **IELA-SRS-F-003 (VI Analyzer):** Given a `.viancfg`/VI/folder, the system **shall** run VI Analyzer headlessly and **shall** emit an HTML report and a `latest-run.json` summary containing counts of analyzed VIs and test outcomes under `tests/results/_agent/vi-analyzer/<label>/`. *Verification:* Test + Inspection.  
 **IELA-SRS-F-004 (VI Compare & Reporting):** Given a base VI and a head VI, the system **shall** run a deterministic LVCompare, apply the requested noise profile, and when `-RenderReport` is set **shall** emit `compare-report.html` plus a `session-index.json` that records inputs, tool paths, and logs under `tests/results/_agent/reports/lvcompare/<label>/`. *Verification:* Test + Inspection.  
 **IELA-SRS-F-005 (Fixture & Snapshot Reports):** The system **shall** render Markdown reports for fixture/snapshot descriptions that include file lists and linkable artifacts. *Verification:* Test + Inspection.  
 **IELA-SRS-F-006 (VIPM Packaging):** The system **shall** build Icon Editor packages using PPL builds for LabVIEW 2021 (x86/x64) and **shall** package via VIPM using LabVIEW 2023 (x86/x64), emitting versioned `.vip` files. *Verification:* Test + Demonstration.  
 **IELA-SRS-F-007 (Bundle Export):** The system **shall** export a portable zip bundle containing `tools/`, `configs/`, and selected `docs/` to `artifacts/icon-editor-lab-tooling.zip`. *Verification:* Demonstration + Inspection.  
-**IELA-SRS-F-008 (MissingInProject Suite):** The system **shall** orchestrate the MissingInProject suite, running VI Analyzer before g-cli, and **shall** write a JSON run report per label. *Verification:* Test + Inspection.
+**IELA-SRS-F-008 (MissingInProject Suite Telemetry):** The system **shall** orchestrate the MissingInProject suite by running VI Analyzer (with dev-mode recovery heuristics) before invoking the MissingInProject CLI/Pester harness, and for each label **shall** emit both `_agent/reports/missing-in-project/<label>.json` and `<runRoot>/missing-in-project-session.json` (schema `missing-in-project/run@v1`) that capture analyzer inputs/results, CLI command, compare artifacts, and telemetry paths. *Verification:* Test + Inspection.
 
 ### 9.2 Interface & Data Requirements
 **IELA-SRS-INT-001 (Snapshot Staging):** The system **shall** stage repo snapshots for compare/analyze flows and **shall** persist a session index with absolute paths and labels. *Verification:* Test + Inspection.  
@@ -115,4 +115,3 @@ Each requirement above is associated with a verification method (Test, Demonstra
 
 ## 10 Traceability
 A Requirements Traceability Matrix (RTM) that maps each requirement to tests, scripts, and expected artifacts is delivered alongside this SRS. Traceability is kept current as scenarios evolve. fileciteturn1file6
-

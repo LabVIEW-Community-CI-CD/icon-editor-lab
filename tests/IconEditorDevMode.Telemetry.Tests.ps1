@@ -163,10 +163,3 @@ Set-Content -LiteralPath '$closeLog' -Value (Get-Date).ToString('o') -Encoding u
         }
     }
 }
-
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

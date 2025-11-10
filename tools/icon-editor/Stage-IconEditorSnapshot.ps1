@@ -231,6 +231,8 @@ $updateParams = @{
 $fixtureSummary = & $updateReportScript @updateParams
 $headReportPath = Join-Path $reportDir 'fixture-report.json'
 
+$selection = $null
+$devModeEnabled = $false
 $validateRoot = $null
 if (-not $SkipValidate.IsPresent) {
   $validateRoot = Join-Path $stageRoot 'validate'
@@ -244,8 +246,6 @@ if (-not $SkipValidate.IsPresent) {
   }
   [void](New-Item -ItemType Directory -Path $validateRoot -Force)
 
-  $devModeEnabled = $false
-  $selection = $null
   if (-not $SkipDevMode.IsPresent) {
     if (-not (Get-Command Enable-IconEditorDevelopmentMode -ErrorAction SilentlyContinue)) {
       if (Test-Path -LiteralPath $devModulePath -PathType Leaf) {
@@ -329,6 +329,45 @@ if (-not $SkipValidate.IsPresent) {
   }
 }
 
+$sessionIndexPath = Join-Path $stageRoot 'session-index.json'
+$sessionIndex = [ordered]@{
+  schema         = 'icon-editor/snapshot-session@v1'
+  generatedAtUtc = (Get-Date).ToUniversalTime().ToString('o')
+  label          = $stageResolvedName
+  stage          = [ordered]@{
+    root          = $stageRoot
+    workspaceRoot = $workspaceResolved
+    sourcePath    = $sourceResolved
+  }
+  fixture        = [ordered]@{
+    fixturePath          = $fixtureResolved
+    baselineFixturePath  = $baselineFixtureResolved
+    headManifestPath     = $headManifestPath
+    headReportPath       = $headReportPath
+    baselineManifestPath = $baselineManifestResolved
+  }
+  overlay        = $overlayResolved
+  validation     = [ordered]@{
+    enabled    = -not $SkipValidate.IsPresent
+    resultsRoot = if ($SkipValidate.IsPresent) { $null } else { $validateRoot }
+  }
+  devMode        = [ordered]@{
+    requested = (-not $SkipDevMode.IsPresent) -and (-not $SkipValidate.IsPresent)
+    enabled   = $devModeEnabled
+    versions  = if ($selection) { $selection.Versions } else { @() }
+    bitness   = if ($selection) { $selection.Bitness } else { @() }
+    operation = $DevModeOperation
+  }
+  artifacts      = [ordered]@{
+    stageRoot        = $stageRoot
+    sessionIndexPath = $sessionIndexPath
+    validateRoot     = if ($SkipValidate.IsPresent) { $null } else { $validateRoot }
+    fixtureReport    = $headReportPath
+    fixtureManifest  = $headManifestPath
+  }
+}
+$sessionIndex | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $sessionIndexPath -Encoding utf8
+
 [pscustomobject]@{
   stageRoot         = $stageRoot
   mirrorPath        = $sourceResolved
@@ -343,6 +382,7 @@ if (-not $SkipValidate.IsPresent) {
   skipLVCompare     = $SkipLVCompare.IsPresent
   dryRun            = $DryRun.IsPresent
   stageExecuted     = $true
+  sessionIndexPath  = $sessionIndexPath
 }
 
 function Test-ValidLabel {

@@ -67,9 +67,3 @@ Describe 'Test-IconEditorPackage.ps1' -Tag 'IconEditor','Packaging','Unit' {
   }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

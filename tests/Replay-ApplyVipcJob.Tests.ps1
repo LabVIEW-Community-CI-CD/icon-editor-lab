@@ -67,9 +67,3 @@ Describe 'Replay-ApplyVipcJob helpers' -Tag 'Unit' {
 
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

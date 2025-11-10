@@ -475,9 +475,3 @@ Add-Content -LiteralPath $env:VIPM_TEST_LOG -Value ('apply-{0}-{1}-{2}' -f $Supp
     }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

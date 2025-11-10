@@ -61,9 +61,3 @@ Describe 'Update-IconEditorFixtureReport.ps1' -Tag 'IconEditor','FixtureReport',
     }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

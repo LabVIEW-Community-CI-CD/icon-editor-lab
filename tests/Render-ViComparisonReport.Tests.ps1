@@ -68,9 +68,3 @@ Describe 'Render-ViComparisonReport.ps1' {
 
 
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

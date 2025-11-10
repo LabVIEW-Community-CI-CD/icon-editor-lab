@@ -1,6 +1,3 @@
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
-$PSModuleAutoLoadingPreference = 'None'
 #Requires -Version 7.0
 
 <#
@@ -38,6 +35,9 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$PSModuleAutoLoadingPreference = 'None'
+Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
+Import-Module Microsoft.PowerShell.Management -ErrorAction Stop
 
 $helperModule = Join-Path $PSScriptRoot 'MipScenarioHelpers.psm1'
 if (-not (Test-Path -LiteralPath $helperModule -PathType Leaf)) {

@@ -9,10 +9,11 @@ Set-ConsoleUtf8: brief description (TODO: refine).
 Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Set-ConsoleUtf8 {
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
     # ShouldProcess guard: honor -WhatIf / -Confirm
     if (-not $PSCmdlet.ShouldProcess($MyInvocation.MyCommand.Name, 'Execute')) { return }
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
 
   try {
     [Console]::OutputEncoding = [System.Text.UTF8Encoding]::UTF8
@@ -41,6 +42,7 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Get-LabVIEWConfigObjects {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
   $configs = New-Object System.Collections.Generic.List[object]
   $root = Resolve-RepoRoot
@@ -225,6 +227,7 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Resolve-ActionlintPath {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
   $p = Resolve-BinPath -Name 'actionlint'
   if ($IsWindows -and $p -and (Split-Path -Leaf $p) -eq 'actionlint') {
@@ -242,6 +245,7 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Resolve-MarkdownlintCli2Path {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
   $root = Resolve-RepoRoot
   if ($IsWindows) {
@@ -264,6 +268,7 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Get-MarkdownlintCli2Version {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
   $root = Resolve-RepoRoot
   $pkg = Join-Path $root 'node_modules/markdownlint-cli2/package.json'
@@ -285,6 +290,7 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Resolve-LVComparePath {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
   if (-not $IsWindows) { return $null }
   $root = Resolve-RepoRoot
@@ -339,6 +345,7 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Resolve-LabVIEWCliPath {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
   if (-not $IsWindows) { return $null }
   $root = Resolve-RepoRoot
@@ -598,6 +605,7 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Resolve-GCliPath {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
   if (-not $IsWindows) { return $null }
   $candidates = @(Get-GCliCandidateExePaths -GCliExePath $null)
@@ -644,6 +652,7 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Get-LabVIEWConfig {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    param()
 
   $root = Resolve-RepoRoot
   foreach ($configName in @('labview-paths.local.json','labview-paths.json')) {

@@ -99,6 +99,29 @@ Set-Content -LiteralPath (Join-Path $ResultsPath 'skip-state.txt') -Value $env:M
 exit 0
 '@
     $backup = & $script:newStubCommand $stub
+    $configPath = Join-Path $TestDrive 'missing-in-project.viancfg'
+    '{}' | Set-Content -LiteralPath $configPath -Encoding utf8
+    $analyzerStub = @"
+param(
+  [string]$ConfigPath,
+  [string]$OutputRoot,
+  [string]$LabVIEWVersion,
+  [int]$Bitness,
+  [switch]$PassThru
+)
+$reportPath = Join-Path $OutputRoot 'vi-analyzer-report.html'
+$cliLogPath = Join-Path $OutputRoot 'vi-analyzer-cli.log'
+'report' | Set-Content -LiteralPath $reportPath -Encoding utf8
+'log' | Set-Content -LiteralPath $cliLogPath -Encoding utf8
+$result = [pscustomobject]@{
+  reportPath = $reportPath
+  cliLogPath = $cliLogPath
+  brokenViCount = 0
+  configSourcePath = $ConfigPath
+}
+if ($PassThru) { return $result }
+"@
+    $analyzerBackup = & $script:newViAnalyzerStubCommand $analyzerStub
     Remove-Item Env:MIP_SKIP_NEGATIVE -ErrorAction SilentlyContinue
     $env:INVOCATION_LOG_PATH = 'C:\logs\mip.log'
     $env:COMPAREVI_REPORTS_ROOT = $reportsRoot
@@ -108,7 +131,7 @@ exit 0
       $reportsBefore = Get-ChildItem -LiteralPath $reportsDir -Filter ("{0}-*.json" -f $label) -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
     }
     try {
-      { & $script:scriptPath -Label $label -ResultsPath $resultsDir } | Should -Not -Throw
+      { & $script:scriptPath -Label $label -ResultsPath $resultsDir -ViAnalyzerConfigPath $configPath -ViAnalyzerVersion 2023 -ViAnalyzerBitness 64 } | Should -Not -Throw
 
       $runDir = Join-Path $resultsDir $label
       Test-Path -LiteralPath $runDir -PathType Container | Should -BeTrue
@@ -139,7 +162,6 @@ exit 0
       $reportJson.telemetryPath | Should -Be $summaryPath
       $reportJson.extra.resultsPath | Should -Be $runDir
       $reportJson.extra.includeNegative | Should -BeFalse
-      Remove-Item -LiteralPath $reportFile.FullName -ErrorAction SilentlyContinue
 
       $pointerPath = Join-Path $resultsDir 'latest-run.json'
       Test-Path -LiteralPath $pointerPath -PathType Leaf | Should -BeTrue
@@ -152,9 +174,25 @@ exit 0
       $index = Get-Content -LiteralPath $indexPath -Raw | ConvertFrom-Json
       $index[0].label | Should -Be $label
       $index[0].runPath | Should -Be $runDir
+
+      $sessionPath = Join-Path $runDir 'missing-in-project-session.json'
+      Test-Path -LiteralPath $sessionPath -PathType Leaf | Should -BeTrue
+      $session = Get-Content -LiteralPath $sessionPath -Raw | ConvertFrom-Json -Depth 6
+      $session.schema | Should -Be 'missing-in-project/run@v1'
+      $session.label | Should -Be $label
+      $session.suite.testsPath | Should -Be (Join-Path $script:repoRoot 'tests\IconEditorMissingInProject.CompareOnly.Tests.ps1')
+      $session.suite.includeNegative | Should -BeFalse
+      $session.viAnalyzer.invoked | Should -BeTrue
+      $session.viAnalyzer.configPath | Should -Be (Resolve-Path -LiteralPath $configPath).Path
+      $session.viAnalyzer.reportPath | Should -Be (Join-Path $runDir 'vi-analyzer-report.html')
+      $session.reports.missingInProject | Should -Be $reportFile.FullName
+      ($session.compare.reportPath) | Should -BeNullOrEmpty
+
+      Remove-Item -LiteralPath $reportFile.FullName -ErrorAction SilentlyContinue
     }
     finally {
       & $script:restoreStubCommand $backup
+      & $script:restoreViAnalyzerStubCommand $analyzerBackup
       Remove-Item Env:INVOCATION_LOG_PATH -ErrorAction SilentlyContinue
       Remove-Item Env:MIP_SKIP_NEGATIVE -ErrorAction SilentlyContinue
       Remove-Item Env:COMPAREVI_REPORTS_ROOT -ErrorAction SilentlyContinue
@@ -399,6 +437,12 @@ Write-Output $OutManifestPath
       $pointer = Get-Content -LiteralPath $pointerPath -Raw | ConvertFrom-Json
       $pointer.label | Should -Be $label
       Test-Path -LiteralPath (Join-Path $resultsDir 'compare-image-manifest.json') -PathType Leaf | Should -BeTrue
+      $runDir = Join-Path $resultsDir $label
+      $sessionPath = Join-Path $runDir 'missing-in-project-session.json'
+      Test-Path -LiteralPath $sessionPath -PathType Leaf | Should -BeTrue
+      $session = Get-Content -LiteralPath $sessionPath -Raw | ConvertFrom-Json -Depth 6
+      $session.compare.reportPath | Should -Be (Join-Path $runDir 'compare-report.html')
+      $session.compare.manifestPath | Should -Be (Join-Path $runDir 'compare-image-manifest.json')
     }
     finally {
       & $script:restoreStubCommand $backup
@@ -825,9 +869,3 @@ Write-Output $manifestPath
   }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

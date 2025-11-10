@@ -30,9 +30,3 @@ Describe 'MipScenarioHelpers' -Tag 'Unit','IconEditor','MissingInProject' {
   }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

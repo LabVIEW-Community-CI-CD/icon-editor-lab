@@ -68,9 +68,3 @@ Describe 'Invoke-VIDiffSweep.ps1' -Tag 'Compare','Sweep','Integration' {
     }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

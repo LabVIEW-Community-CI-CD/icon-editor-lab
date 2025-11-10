@@ -87,9 +87,3 @@ Describe 'Invoke-VipmDependencies.ps1 argument handling' -Tag 'Unit','VipmDepend
     }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

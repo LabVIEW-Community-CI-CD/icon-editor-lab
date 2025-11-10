@@ -83,9 +83,3 @@ Describe 'Invoke-IconEditorSnapshotFromRepo.ps1' -Tag 'IconEditor','Snapshot','I
     }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

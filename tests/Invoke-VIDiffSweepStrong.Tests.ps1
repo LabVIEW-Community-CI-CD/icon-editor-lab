@@ -308,9 +308,3 @@ Describe 'Invoke-VIDiffSweepStrong.ps1' -Tag 'Script','IconEditor' {
 }
 
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

@@ -474,6 +474,7 @@ if ($viAnalyzerConfigResolved) {
 
 # Env toggle for negative coverage
 $originalSkipValue = [Environment]::GetEnvironmentVariable('MIP_SKIP_NEGATIVE')
+$skipNegativeState = $null
 try {
   if ($IncludeNegative.IsPresent) {
     Remove-Item Env:MIP_SKIP_NEGATIVE -ErrorAction SilentlyContinue
@@ -508,6 +509,7 @@ try {
     throw "MissingInProject suite failed with exit code $exitCode."
   }
 
+$skipNegativeState = Get-EnvBoolean -Name 'MIP_SKIP_NEGATIVE' -DefaultValue $true
 $summaryPath = Join-Path $runResultsPath 'pester-summary.txt'
   $summaryContent = if (Test-Path -LiteralPath $summaryPath -PathType Leaf) {
     Get-Content -LiteralPath $summaryPath -Raw
@@ -720,6 +722,56 @@ $summaryPath = Join-Path $runResultsPath 'pester-summary.txt'
     $indexList = $indexList[0..($maxEntries - 1)]
   }
   $indexList | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $indexPath -Encoding utf8
+
+  $sessionIndexPath = Join-Path $runResultsPath 'missing-in-project-session.json'
+  $additionalArgsArray = if ($AdditionalPesterArgs) { @($AdditionalPesterArgs) } else { @() }
+  $sessionPayload = [ordered]@{
+    schema         = 'missing-in-project/run@v1'
+    generatedAtUtc = (Get-Date).ToUniversalTime().ToString('o')
+    label          = $Label
+    suite          = [ordered]@{
+      testsPath      = $selectedTestsPath
+      resultsRoot    = $runResultsPath
+      summaryPath    = $summaryPath
+      includeNegative = -not $skipNegativeState
+      command        = $commandString
+      additionalArgs = $additionalArgsArray
+    }
+    viAnalyzer     = [ordered]@{
+      invoked        = [bool]$viAnalyzerConfigResolved
+      configPath     = $viAnalyzerConfigResolved
+      labviewVersion = $ViAnalyzerVersion
+      bitness        = $ViAnalyzerBitness
+      reportPath     = if ($viAnalyzerResult -and $viAnalyzerResult.PSObject.Properties['reportPath']) { $viAnalyzerResult.reportPath } else { $null }
+      cliLogPath     = if ($viAnalyzerResult -and $viAnalyzerResult.PSObject.Properties['cliLogPath']) { $viAnalyzerResult.cliLogPath } else { $null }
+      brokenViCount  = if ($viAnalyzerResult -and $viAnalyzerResult.PSObject.Properties['brokenViCount']) { [int]$viAnalyzerResult.brokenViCount } else { $null }
+    }
+    compare        = [ordered]@{
+      requested     = $RequireCompareReport.IsPresent
+      reportPath    = if (Test-Path -LiteralPath $compareReportPath -PathType Leaf) { $compareReportPath } else { $null }
+      manifestPath  = $compareManifestPath
+      summaryPath   = $compareSummaryPath
+    }
+    reports        = [ordered]@{
+      missingInProject = $reportPath
+      latestPointer    = $latestPointerPath
+      runIndex         = $indexPath
+    }
+  }
+  if ($viAnalyzerResult -and $viAnalyzerResult.PSObject.Properties['configSourcePath']) {
+    $sessionPayload.viAnalyzer.configSourcePath = $viAnalyzerResult.configSourcePath
+  }
+  if ($viAnalyzerRetryInfo.enabled -or $viAnalyzerRetryInfo.attempted) {
+    $sessionPayload.viAnalyzer.retry = [ordered]@{
+      enabled   = $viAnalyzerRetryInfo.enabled
+      attempted = $viAnalyzerRetryInfo.attempted
+      succeeded = $viAnalyzerRetryInfo.succeeded
+      note      = $viAnalyzerRetryInfo.note
+      targets   = $viAnalyzerRetryInfo.targets
+    }
+  }
+  $sessionPayload | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $sessionIndexPath -Encoding utf8
+  Write-Host ("MissingInProject session index: {0}" -f $sessionIndexPath) -ForegroundColor DarkGray
 }
 finally {
   if ($originalSkipValue) {

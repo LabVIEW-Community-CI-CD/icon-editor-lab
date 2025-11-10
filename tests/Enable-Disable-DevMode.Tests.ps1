@@ -535,10 +535,3 @@ foreach ($version in $Versions) {
         { & $script:disableScript -RepoRoot $stub.RepoRoot -IconEditorRoot $stub.IconEditorRoot -Versions 2026 -Bitness 64 } | Should -Throw '*Icon editor dev-mode helper*'
     }
 }
-
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

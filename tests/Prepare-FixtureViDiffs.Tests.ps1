@@ -150,9 +150,3 @@ Describe 'Prepare-FixtureViDiffs.ps1' -Tag 'IconEditor','VICompare','Unit' {
     }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

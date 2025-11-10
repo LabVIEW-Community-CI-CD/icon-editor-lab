@@ -122,10 +122,3 @@ Describe 'IconEditor development mode (integration)' -Tag 'IconEditor','Integrat
         }
     }
 }
-
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

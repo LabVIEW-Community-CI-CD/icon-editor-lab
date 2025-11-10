@@ -8,8 +8,6 @@ param(
 #Requires -Version 7.0
 #Requires -Modules Pester
 
-param()
-
 Describe 'MissingInProject compare-only suite' -Tag 'IconEditor','Integration','MissingInProject','CompareOnly' {
     $script:repoRoot = $null
     $script:projectFile = $null
@@ -79,11 +77,4 @@ Describe 'MissingInProject compare-only suite' -Tag 'IconEditor','Integration','
             }
         }
     }
-}
-
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
 }

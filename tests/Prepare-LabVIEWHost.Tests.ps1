@@ -182,9 +182,3 @@ New-Item -ItemType Directory -Path `$runRoot -Force | Out-Null
   }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}

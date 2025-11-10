@@ -114,6 +114,15 @@ Describe 'Stage-IconEditorSnapshot.ps1' -Tag 'IconEditor','Snapshot','Unit' {
         $report = Get-Content -LiteralPath $result.headReportPath -Raw | ConvertFrom-Json -Depth 10
         $report.schema | Should -Be 'icon-editor/fixture-report@v1'
         $Global:StageDevModeLog.Count | Should -Be 0
+
+        $result.sessionIndexPath | Should -Be (Join-Path $result.stageRoot 'session-index.json')
+        Test-Path -LiteralPath $result.sessionIndexPath -PathType Leaf | Should -BeTrue
+        $snapshotIndex = Get-Content -LiteralPath $result.sessionIndexPath -Raw | ConvertFrom-Json -Depth 6
+        $snapshotIndex.schema | Should -Be 'icon-editor/snapshot-session@v1'
+        $snapshotIndex.label | Should -Be 'unit-snapshot'
+        $snapshotIndex.stage.root | Should -Be $result.stageRoot
+        $snapshotIndex.validation.enabled | Should -BeFalse
+        $snapshotIndex.fixture.headReportPath | Should -Be $result.headReportPath
     }
 
     It 'invokes the provided validate helper with dry-run semantics' {
@@ -179,6 +188,13 @@ $stubTemplate.Replace('__LOG_PATH__', $logPath) | Set-Content -LiteralPath $vali
         $Global:StageDevModeLog[1].Operation | Should -Be 'Compare'
         ($Global:StageDevModeLog[1].Versions -join ',') | Should -Be '2025'
         ($Global:StageDevModeLog[1].Bitness -join ',')  | Should -Be '64'
+
+        Test-Path -LiteralPath $result.sessionIndexPath -PathType Leaf | Should -BeTrue
+        $snapshotIndex = Get-Content -LiteralPath $result.sessionIndexPath -Raw | ConvertFrom-Json -Depth 6
+        $snapshotIndex.validation.enabled | Should -BeTrue
+        $snapshotIndex.validation.resultsRoot | Should -Be $result.validateRoot
+        $snapshotIndex.devMode.enabled | Should -BeTrue
+        $snapshotIndex.devMode.operation | Should -Be 'Compare'
     }
 
     It 'honours baseline environment variables when parameters are omitted' {
@@ -235,6 +251,10 @@ $stubTemplate.Replace('__LOG_PATH__', $logPath) | Set-Content -LiteralPath $vali
             $log.baselineFixture | Should -Be (Resolve-Path -LiteralPath $baselineFixturePath).Path
             $log.baselineManifest | Should -Be (Resolve-Path -LiteralPath $baselineManifestPath).Path
             Test-Path -LiteralPath $log.resultsRoot -PathType Container | Should -BeTrue
+
+            $snapshotIndex = Get-Content -LiteralPath $result.sessionIndexPath -Raw | ConvertFrom-Json -Depth 6
+            $snapshotIndex.fixture.baselineFixturePath | Should -Be (Resolve-Path -LiteralPath $baselineFixturePath).Path
+            $snapshotIndex.fixture.baselineManifestPath | Should -Be (Resolve-Path -LiteralPath $baselineManifestPath).Path
         }
         finally {
             if ($null -ne $originalBaselineFixture) {
@@ -363,9 +383,3 @@ $stubTemplate.Replace('__LOG_PATH__', $logPath) | Set-Content -LiteralPath $vali
     }
 }
 
-}
-
-    throw "Operation timed out in $TimeoutSec s"
-  }
-  Receive-Job $job -ErrorAction Stop
-}
