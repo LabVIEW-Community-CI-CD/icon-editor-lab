@@ -96,6 +96,17 @@ jobs:
           $config.CodeCoverage.Enabled = $true
           $config.CodeCoverage.OutputFormat = 'Cobertura'
           $config.CodeCoverage.OutputPath  = 'artifacts/coverage/coverage.xml'
+          $coverageTargets = @(
+            'src/tools/ConsoleUx.psm1',
+            'src/tools/Once-Guard.psm1',
+            'src/tools/Timing/Tick.psm1'
+          ) | Where-Object { Test-Path $_ }
+          if ($coverageTargets.Count -gt 0) {
+            $config.CodeCoverage.Path = $coverageTargets
+          }
+          else {
+            Write-Warning 'No coverage targets discovered under src/tools; proceeding without instrumentation filter.'
+          }
           $config.TestResult.Enabled = $true
           $config.TestResult.OutputFormat = 'JUnitXml'
           $config.TestResult.OutputPath   = 'artifacts/test-results/results.xml'

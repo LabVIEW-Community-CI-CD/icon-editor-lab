@@ -61,6 +61,17 @@ Describe 'ConsoleUx diagnostics helpers' -Tag 'Unit','Tools','ConsoleUx' {
                 Get-DxLevel | Should -Be 'debug'
             }
         }
+
+        It 'handles quiet and detailed aliases from environment' {
+            $env:DX_CONSOLE_LEVEL = 'Q'
+            InModuleScope ConsoleUx {
+                Get-DxLevel | Should -Be 'quiet'
+            }
+            $env:DX_CONSOLE_LEVEL = 'Detailed'
+            InModuleScope ConsoleUx {
+                Get-DxLevel | Should -Be 'detailed'
+            }
+        }
     }
 
     Context 'Test-DxAtLeast ranking' {
@@ -103,6 +114,27 @@ Describe 'ConsoleUx diagnostics helpers' -Tag 'Unit','Tools','ConsoleUx' {
             Assert-MockCalled Write-Host -ModuleName ConsoleUx -Times 0
             Assert-MockCalled Write-Warning -ModuleName ConsoleUx -Times 1 -ParameterFilter { $Message -eq 'warn only' }
         }
+
+        It 'emits errors and debug diagnostics via the appropriate channels' {
+            Mock -CommandName Write-Error -ModuleName ConsoleUx {}
+            Mock -CommandName Write-Host -ModuleName ConsoleUx {}
+
+            InModuleScope ConsoleUx {
+                Write-Dx -Message 'boom' -Level 'error' -ConsoleLevel 'normal'
+                Write-Dx -Message 'trace' -Level 'debug' -ConsoleLevel 'debug'
+            }
+
+            Assert-MockCalled Write-Error -ModuleName ConsoleUx -Times 1 -ParameterFilter { $Message -eq 'boom' }
+            Assert-MockCalled Write-Host -ModuleName ConsoleUx -Times 1 -ParameterFilter { $Object -eq '[dx] trace' -and $ForegroundColor -eq 'DarkGray' }
+        }
+
+        It 'respects concise console mode when info level underflows normal' {
+            Mock -CommandName Write-Host -ModuleName ConsoleUx {}
+            InModuleScope ConsoleUx {
+                Write-Dx -Message 'concise ping' -ConsoleLevel 'concise'
+            }
+            Assert-MockCalled Write-Host -ModuleName ConsoleUx -Times 1 -ParameterFilter { $Object -eq '[dx] concise ping' }
+        }
     }
 
     Context 'Write-DxKV formatting' {
@@ -126,6 +158,34 @@ Describe 'ConsoleUx diagnostics helpers' -Tag 'Unit','Tools','ConsoleUx' {
             }
 
             Assert-MockCalled Write-Host -ModuleName ConsoleUx -Times 0
+        }
+
+        It 'honors custom prefixes and ignores empty values' {
+            Mock -CommandName Write-Host -ModuleName ConsoleUx {}
+
+            InModuleScope ConsoleUx {
+                Write-DxKV -Data @{ keep = 'yes'; skip = ''; null = $null } -ConsoleLevel 'normal' -Prefix '[custom]'
+            }
+
+            Assert-MockCalled Write-Host -ModuleName ConsoleUx -Times 1 -ParameterFilter {
+                $Object -eq '[custom] keep=yes'
+            }
+        }
+    }
+
+    Context 'Utility helpers' {
+        It 'validates labels with ASCII-safe pattern' {
+            InModuleScope ConsoleUx {
+                Test-ValidLabel -Label 'alpha-123_ok'
+                { Test-ValidLabel -Label 'bad label!' } | Should -Throw '*Invalid label*'
+            }
+        }
+
+        It 'invokes script blocks with timeout guards' {
+            InModuleScope ConsoleUx {
+                Invoke-WithTimeout -ScriptBlock { 'done' } -TimeoutSec 5 | Should -Be 'done'
+                { Invoke-WithTimeout -ScriptBlock { Start-Sleep -Seconds 2 } -TimeoutSec 0 } | Should -Throw '*Operation timed out*'
+            }
         }
     }
 }

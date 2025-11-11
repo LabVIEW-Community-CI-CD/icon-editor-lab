@@ -66,4 +66,24 @@ Describe 'Invoke-Once guard' -Tag 'Unit','Tools','OnceGuard' {
         Test-Path $scope | Should -BeTrue
         (Get-ChildItem -Path $scope | Measure-Object).Count | Should -Be 1
     }
+
+    It 'rejects empty keys' {
+        { Invoke-Once -Key '   ' -ScopeDirectory $TestDrive -Action { } } | Should -Throw '*cannot be empty*'
+    }
+
+    Context 'Utility helpers' {
+        It 'validates labels inside Once-Guard module scope' {
+            InModuleScope 'Once-Guard' {
+                Test-ValidLabel -Label 'alpha_42'
+                { Test-ValidLabel -Label 'not valid!' } | Should -Throw '*Invalid label*'
+            }
+        }
+
+        It 'wraps asynchronous execution with timeout handling' {
+            InModuleScope 'Once-Guard' {
+                Invoke-WithTimeout -ScriptBlock { 'noop' } -TimeoutSec 2 | Should -Be 'noop'
+                { Invoke-WithTimeout -ScriptBlock { Start-Sleep -Seconds 2 } -TimeoutSec 0 } | Should -Throw '*Operation timed out*'
+            }
+        }
+    }
 }
