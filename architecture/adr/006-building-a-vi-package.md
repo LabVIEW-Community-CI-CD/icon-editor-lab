@@ -1,8 +1,8 @@
 # ADR 006: Building a VI Package
 
-- **Status**: Proposed
-- **Date**: 2025-11-10
-- **Decision Owners**: TBD
+Status: Proposed
+Date: 2025-11-10
+Decision Owners: TBD
 
 ## Context
 See System Definition.
