@@ -4,6 +4,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $script:Providers = @{}
+$script:ProvidersPopulated = $false
 
 function Get-GCliProviderKey {
     param(
@@ -67,6 +68,7 @@ function Get-GCliProviders {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param([string]$Manager)
 
+    Ensure-GCliProvidersLoaded
     $entries = $script:Providers.GetEnumerator()
     if ($Manager) {
         $managerKey = $Manager.ToLowerInvariant()
@@ -89,6 +91,7 @@ function Get-GCliProviderByName {
         [string]$Manager
     )
 
+    Ensure-GCliProvidersLoaded
     if ($Manager) {
         $key = Get-GCliProviderKey -Name $Name -Manager $Manager
         if ($script:Providers.ContainsKey($key)) {
@@ -115,7 +118,28 @@ Auto-seeded to satisfy help synopsis presence. Update with real details.
 function Import-GCliProviderModules {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
 
-    $providerRoot = Join-Path $PSScriptRoot 'providers'
+    $providerOverride = $env:ICON_EDITOR_GCLI_PROVIDER_ROOT
+    $providerRoot = $null
+    if ($providerOverride) {
+        $providerRoot = $providerOverride
+    } else {
+        $rootPath = $PSScriptRoot
+        if (-not $rootPath) {
+            $maybePath = $null
+            if ($PSCommandPath) {
+                $maybePath = $PSCommandPath
+            } elseif ($MyInvocation -and $MyInvocation.MyCommand -and ($MyInvocation.MyCommand | Get-Member -Name Path -ErrorAction SilentlyContinue)) {
+                $maybePath = $MyInvocation.MyCommand.Path
+            }
+            if ($maybePath) {
+                $rootPath = Split-Path -Parent $maybePath
+            }
+        }
+        if (-not $rootPath) { return }
+        $providerRoot = Join-Path $rootPath 'providers'
+    }
+
+    if (-not $providerRoot) { return }
     if (-not (Test-Path -LiteralPath $providerRoot -PathType Container)) { return }
 
     $modules = Get-ChildItem -Path $providerRoot -Directory -ErrorAction SilentlyContinue
@@ -141,9 +165,13 @@ function Import-GCliProviderModules {
             Write-Warning ("Failed to import g-cli provider from {0}: {1}" -f $modulePath, $_.Exception.Message)
         }
     }
+    $script:ProvidersPopulated = $true
 }
 
-Import-GCliProviderModules
+function Ensure-GCliProvidersLoaded {
+    if ($script:Providers.Count -gt 0 -or $script:ProvidersPopulated) { return }
+    Import-GCliProviderModules
+}
 
 <#
 .SYNOPSIS
@@ -160,6 +188,7 @@ function Get-GCliInvocation {
         [string]$Manager
     )
 
+    Ensure-GCliProvidersLoaded
     $candidates = @()
     if ($ProviderName) {
         $provider = Get-GCliProviderByName -Name $ProviderName -Manager $Manager
