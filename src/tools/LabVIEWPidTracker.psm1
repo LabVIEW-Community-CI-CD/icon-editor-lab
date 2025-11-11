@@ -8,12 +8,11 @@ Resolve-LabVIEWPidContext: brief description (TODO: refine).
 Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Resolve-LabVIEWPidContext {
+  [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+  param([object]$Context)
 
     # ShouldProcess guard: honor -WhatIf / -Confirm
     if (-not $PSCmdlet.ShouldProcess($MyInvocation.MyCommand.Name, 'Execute')) { return }
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
-
-  param([object]$Context)
 
   if (-not $PSBoundParameters.ContainsKey('Context')) { return $null }
   if ($null -eq $Context) { return $null }
