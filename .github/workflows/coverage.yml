@@ -69,7 +69,11 @@ jobs:
             'tests/smoke',
             'tests/sample.tests.ps1',
             'tests/Sanity.Tests.ps1',
-            'src/tests/tools'
+            'src/tests/tools/ConsoleUx.Unit.Tests.ps1',
+            'src/tests/tools/LabVIEWCli.Utility.Tests.ps1',
+            'src/tests/tools/Once-Guard.Unit.Tests.ps1',
+            'src/tests/tools/RunnerProfile.Utility.Tests.ps1',
+            'src/tests/tools/Timing.Tick.Unit.Tests.ps1'
           )
           $paths = @()
           foreach ($target in $safeTargets) {
