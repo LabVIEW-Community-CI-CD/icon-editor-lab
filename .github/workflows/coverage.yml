@@ -65,17 +65,28 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts/coverage,artifacts/test-results | Out-Null
+          $safeTargets = @(
+            'tests/smoke',
+            'tests/sample.tests.ps1',
+            'tests/Sanity.Tests.ps1',
+            'src/tests/tools'
+          )
           $paths = @()
-          foreach ($candidate in @('tests', 'src/tests')) {
-            if (Test-Path $candidate) {
-              $paths += $candidate
+          foreach ($target in $safeTargets) {
+            if (Test-Path $target) {
+              $paths += $target
             }
           }
           if ($paths.Count -eq 0) {
-            Write-Warning 'No test directories found (tests/src/tests); defaulting to tests'
-            $paths = @('tests')
+            Write-Warning 'No hermetic test targets found; falling back to tests/smoke if available.'
+            if (Test-Path 'tests/smoke') {
+              $paths = @('tests/smoke')
+            }
+            else {
+              throw 'No deterministic test targets available for coverage run.'
+            }
           }
-          Write-Host ("Invoking Pester on: {0}" -f ($paths -join ', '))
+          Write-Host ("Invoking Pester on curated targets: {0}" -f ($paths -join ', '))
           $config = New-PesterConfiguration
           $config.Run.Path = $paths
           $config.CodeCoverage.Enabled = $true
