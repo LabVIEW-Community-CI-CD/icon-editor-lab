@@ -119,7 +119,7 @@ jobs:
           if (-not (Test-Path artifacts/coverage/coverage.xml)) {
             throw 'coverage.xml missing'
           }
-          [xml]$doc = Get-Content artifacts/coverage/coverage.xml
+          [xml]$doc = Get-Content artifacts/coverage/coverage.xml -Raw
           $rate = [double]$doc.coverage.GetAttribute('line-rate')
           $pct  = [math]::Round($rate * 100, 2)
           if ($pct -lt [double]$env.COVERAGE_MIN) {
@@ -135,7 +135,7 @@ jobs:
           if (-not (Test-Path artifacts/coverage/coverage.xml)) {
             throw 'coverage.xml missing'
           }
-          [xml]$doc = Get-Content artifacts/coverage/coverage.xml
+          [xml]$doc = Get-Content artifacts/coverage/coverage.xml -Raw
           $classes = $doc.coverage.packages.package.classes.class
           if ($null -eq $classes) {
             Write-Host 'No classes reported; skipping file-floor enforcement.'
