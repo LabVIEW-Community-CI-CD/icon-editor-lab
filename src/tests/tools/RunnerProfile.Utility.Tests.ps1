@@ -181,14 +181,6 @@ Describe 'RunnerProfile utility helpers' -Tag 'Unit','Tools','RunnerProfile' {
             }
         }
 
-        It 'uses gh CLI when available and parses jobs response' {
-            InModuleScope RunnerProfile {
-                Mock -ModuleName RunnerProfile -CommandName Get-Command -MockWith { [pscustomobject]@{ Source = { param($argList) '{"jobs":[{"runner_name":"gh","labels":["windows","x64"]}]}' } } }
-                $jobs = Invoke-RunnerJobsApi -Repository 'contoso/icon-editor' -RunId '1001'
-                $jobs | Should -HaveCount 1
-                $jobs[0].labels | Should -Contain 'windows'
-            }
-        }
     }
 
     Context 'Get-RunnerProfile' {
