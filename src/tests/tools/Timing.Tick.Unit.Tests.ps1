@@ -54,4 +54,23 @@ Describe 'Timing tick helpers' -Tag 'Unit','Tools','Timing' {
             Read-TickCounter -Counter $null | Should -BeNullOrEmpty
         }
     }
+
+    It 'rounds elapsed milliseconds when reading counters' {
+        InModuleScope Tick {
+            $counter = Start-TickCounter -TickMilliseconds 10
+            Wait-Tick -Counter $counter -Milliseconds 1 | Out-Null
+            $snapshot = Read-TickCounter -Counter $counter
+            $snapshot.elapsedMs | Should -BeGreaterThan 0
+            $snapshot.intervalMs | Should -Be 10
+            Stop-TickCounter -Counter $counter
+        }
+    }
+
+    It 'stops the stopwatch when Stop-TickCounter is invoked' {
+        InModuleScope Tick {
+            $counter = Start-TickCounter -TickMilliseconds 2
+            Stop-TickCounter -Counter $counter
+            $counter.stopwatch.IsRunning | Should -BeFalse
+        }
+    }
 }

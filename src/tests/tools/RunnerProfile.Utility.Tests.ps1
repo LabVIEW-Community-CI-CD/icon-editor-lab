@@ -79,6 +79,20 @@ Describe 'RunnerProfile utility helpers' -Tag 'Unit','Tools','RunnerProfile' {
         }
     }
 
+    Context 'Get-RunnerLabels caching and API fallback' {
+        It 'hydrates from API when env is empty and caches the result' {
+            $env:RUNNER_LABELS = ''
+            InModuleScope RunnerProfile {
+                Mock -ModuleName RunnerProfile -CommandName Get-RunnerLabelsFromApi -MockWith { @('self-hosted','windows-2025') }
+                $first = Get-RunnerLabels -ForceRefresh
+                $second = Get-RunnerLabels
+                $first | Should -Contain 'self-hosted'
+                $second | Should -Be $first
+                Assert-MockCalled -ModuleName RunnerProfile -CommandName Get-RunnerLabelsFromApi -Times 1 -Exactly
+            }
+        }
+    }
+
     Context 'Get-RunnerProfile' {
         It 'combines env fields and cached labels' {
             $env:RUNNER_LABELS = 'linux,windows'
@@ -95,6 +109,22 @@ Describe 'RunnerProfile utility helpers' -Tag 'Unit','Tools','RunnerProfile' {
                 $profile.labels | Should -Contain 'linux'
                 $profile.labels | Should -Contain 'windows'
                 $profile.machine | Should -Not -BeNullOrEmpty
+            }
+        }
+
+        It 'reuses cached profile unless ForceRefresh is specified' {
+            $env:RUNNER_LABELS = 'alpha,beta'
+            $env:RUNNER_NAME = 'runner-1'
+            $env:RUNNER_OS = 'Windows'
+            InModuleScope RunnerProfile {
+                $first = Get-RunnerProfile -ForceRefresh
+                $env:RUNNER_LABELS = 'beta,gamma'
+                $cached = Get-RunnerProfile
+                $cached.labels | Should -Contain 'alpha'
+                $cached.name | Should -Be 'runner-1'
+                $fresh = Get-RunnerProfile -ForceRefresh
+                $fresh.labels | Should -Contain 'gamma'
+                $fresh.name | Should -Be 'runner-1'
             }
         }
     }
