@@ -1,4 +1,8 @@
 # ADR Index (Icon-Editor-Lab)
+
+Status: Informational
+Date: 2025-11-11
+Decision Owners: Architecture Council
 | ADR | Title | Status | Date | Owner |
 |---|---|---|---|---|
 | 001 | VI Comparison Report | Proposed | 2025-11-10 | Arch Lead, Lab Lead |

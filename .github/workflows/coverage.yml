@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Pester v6
+      - name: Install Pester v6 (fallback to latest stable)
         shell: pwsh
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -29,7 +29,6 @@ jobs:
           }
           $repo = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
           if (-not $repo) {
-            Write-Warning 'PSGallery repository missing; registering PSGallery explicitly.'
             Register-PSRepository -Name PSGallery `
               -SourceLocation 'https://www.powershellgallery.com/api/v2' `
               -ScriptSourceLocation 'https://www.powershellgallery.com/api/v2' `
@@ -39,25 +38,44 @@ jobs:
           else {
             Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           }
+          $minVersion = [version]'6.0.0'
+          $fallbackVersion = '5.7.1'
+          $targetVersion = $null
+          try {
+            $candidate = Find-Module -Name Pester -Repository PSGallery -AllowPrerelease -AllVersions `
+              | Where-Object { [version]$_.Version -ge $minVersion } `
+              | Sort-Object { [version]$_.Version } -Descending `
+              | Select-Object -First 1
+            if ($candidate) {
+              $targetVersion = $candidate.Version
+              Write-Host "Found Pester version $targetVersion >= $minVersion."
+            }
+          }
+          catch {
+            Write-Warning "Find-Module lookup failed: $($_.Exception.Message)"
+          }
+          if (-not $targetVersion) {
+            Write-Warning "Pester >= $minVersion not available. Falling back to $fallbackVersion."
+            $targetVersion = $fallbackVersion
+          }
           $attempt = 0
           $installed = $false
           do {
             try {
-              Install-Module Pester -MinimumVersion 6.0.0 -Repository PSGallery -Force -Scope CurrentUser -ErrorAction Stop
-              Import-Module  Pester -MinimumVersion 6.0.0 -Force -ErrorAction Stop
+              Install-Module Pester -RequiredVersion $targetVersion -Repository PSGallery -Force -Scope CurrentUser -AllowPrerelease -ErrorAction Stop
+              Import-Module  Pester -RequiredVersion $targetVersion -Force -ErrorAction Stop
               $installed = $true
             }
             catch {
               $attempt++
               Write-Warning "Pester installation attempt $attempt failed: $($_.Exception.Message)"
               if ($attempt -lt 3) {
-                Write-Warning 'Retrying install...'
                 Start-Sleep -Seconds 5
               }
             }
           } while (-not $installed -and $attempt -lt 3)
           if (-not $installed) {
-            Write-Warning 'Falling back to pre-installed Pester module.'
+            Write-Warning 'Falling back to bundled Pester module.'
             Import-Module Pester -ErrorAction Stop
           }
 
@@ -71,6 +89,7 @@ jobs:
             'tests/Sanity.Tests.ps1',
             'src/tests/tools/ConsoleUx.Unit.Tests.ps1',
             'src/tests/tools/LabVIEWCli.Utility.Tests.ps1',
+            'src/tests/tools/LabVIEWPidTracker.Unit.Tests.ps1',
             'src/tests/tools/Once-Guard.Unit.Tests.ps1',
             'src/tests/tools/RunnerProfile.Utility.Tests.ps1',
             'src/tests/tools/Timing.Tick.Unit.Tests.ps1'
@@ -98,6 +117,7 @@ jobs:
           $config.CodeCoverage.OutputPath  = 'artifacts/coverage/coverage.xml'
           $coverageTargets = @(
             'src/tools/ConsoleUx.psm1',
+            'src/tools/LabVIEWPidTracker.psm1',
             'src/tools/Once-Guard.psm1',
             'src/tools/Timing/Tick.psm1'
           ) | Where-Object { Test-Path $_ }
@@ -105,7 +125,7 @@ jobs:
             $config.CodeCoverage.Path = $coverageTargets
           }
           else {
-            Write-Warning 'No coverage targets discovered under src/tools; proceeding without instrumentation filter.'
+            Write-Warning 'No coverage target files discovered; entire run will be instrumented.'
           }
           $config.TestResult.Enabled = $true
           $config.TestResult.OutputFormat = 'JUnitXml'
@@ -122,7 +142,7 @@ jobs:
           $doc = [System.Xml.XmlDocument]::new()
           $doc.Load((Resolve-Path 'artifacts/coverage/coverage.xml'))
           $coverageNode = $doc.SelectSingleNode('/coverage')
-          if (-not $coverageNode) { throw 'Invalid coverage.xml: missing root node' }
+          if (-not $coverageNode) { throw 'Invalid coverage.xml: missing root node.' }
           $rate = [double]$coverageNode.Attributes.GetNamedItem('line-rate').Value
           $pct  = [math]::Round($rate * 100, 2)
           if ($pct -lt [double]$env.COVERAGE_MIN) {
@@ -141,16 +161,16 @@ jobs:
           $doc = [System.Xml.XmlDocument]::new()
           $doc.Load((Resolve-Path 'artifacts/coverage/coverage.xml'))
           $classes = $doc.SelectNodes('/coverage/packages/package/classes/class')
-          if ($null -eq $classes) {
+          if ($null -eq $classes -or $classes.Count -eq 0) {
             Write-Host 'No classes reported; skipping file-floor enforcement.'
             return
           }
           $violations = @()
           foreach ($c in $classes) {
             if ($critical -contains $c.filename) {
-              $lines = @($c.lines.line)
+              $lines = @($c.SelectNodes('lines/line'))
               $total = $lines.Count
-              $covered = ($lines | Where-Object { [int]$_.hits -gt 0 }).Count
+              $covered = ($lines | Where-Object { [int]$_.GetAttribute('hits') -gt 0 }).Count
               $pct = if ($total -gt 0) { [math]::Round(($covered / $total) * 100, 2) } else { 100 }
               if ($pct -lt [double]$env:COVERAGE_MIN) { $violations += "$($c.filename)=$pct%" }
             }

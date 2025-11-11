@@ -1,0 +1,41 @@
+name: ADR Lint
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate ADR structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t ADR_FILES < <(git ls-tree -r --name-only HEAD | grep -E '^(architecture/adr|adr)/.+\.md$' || true)
+          if [[ ${#ADR_FILES[@]} -eq 0 ]]; then
+            echo "::error::No ADR markdown files found under architecture/adr or adr." >&2
+            exit 1
+          fi
+          for file in "${ADR_FILES[@]}"; do
+            CONTENT=$(git show "HEAD:$file")
+            TITLE=$(awk 'NR==1 {print; exit}' <<<"$CONTENT")
+            STATUS=$(grep -m1 '^Status:' <<<"$CONTENT" || true)
+            [[ -n "$TITLE" && "$TITLE" =~ ^#\  ]] || {
+              echo "::error::ADR missing H1 title: $file" >&2
+              exit 1
+            }
+            [[ -n "$STATUS" ]] || {
+              echo "::error::ADR missing Status line: $file" >&2
+              exit 1
+            }
+          done
+          echo "Validated ${#ADR_FILES[@]} ADR file(s)."
