@@ -11,5 +11,5 @@
 
 # Docs & decisions
 /docs/               @svelderrainruiz
-/adr/                @svelderrainruiz
 /architecture/       @svelderrainruiz
+/architecture/adr/   @svelderrainruiz
