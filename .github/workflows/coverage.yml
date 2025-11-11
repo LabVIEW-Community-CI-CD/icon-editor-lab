@@ -96,7 +96,8 @@ jobs:
             'src/tests/tools/ConsoleWatch.Unit.Tests.ps1',
             'src/tests/tools/Vipm.Unit.Tests.ps1',
             'src/tests/tools/GCli.Unit.Tests.ps1',
-            'src/tests/tools/Tools.GetPesterVersion.Tests.ps1'
+            'src/tests/tools/Tools.GetPesterVersion.Tests.ps1',
+            'src/tests/tools/Dev-Dashboard.Unit.Tests.ps1'
           )
           $paths = @()
           foreach ($target in $safeTargets) {
