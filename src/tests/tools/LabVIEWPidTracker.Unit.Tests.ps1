@@ -79,11 +79,13 @@ Describe 'LabVIEW PID tracker helpers' -Tag 'Unit','Tools','LabVIEWPidTracker' {
             }
             $script:timestamp = Get-Date '2025-11-11T00:00:00Z'
             Mock -ModuleName LabVIEWPidTracker -CommandName Get-Date -MockWith { $script:timestamp }
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters['Name'] -eq 'LabVIEW' } -MockWith {
+            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter {
+                $null -ne $Name -and ($Name -contains 'LabVIEW')
+            } -MockWith {
                 return ,$script:labProcess
             }
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters.ContainsKey('Id') } -MockWith {
-                if ($Id -eq $script:labProcess.Id) { return $script:labProcess }
+            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $null -ne $Id } -MockWith {
+                if ($Id -contains $script:labProcess.Id) { return $script:labProcess }
                 throw [System.ComponentModel.Win32Exception]::new("Process $Id not found")
             }
         }
@@ -142,8 +144,8 @@ Describe 'LabVIEW PID tracker helpers' -Tag 'Unit','Tools','LabVIEWPidTracker' {
 
         It 'notes when LabVIEW is not running' {
             $tracker = Join-Path $TestDrive 'noproc' 'tracker.json'
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters['Name'] -eq 'LabVIEW' } -MockWith { @() }
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters.ContainsKey('Id') } -MockWith { throw [System.ComponentModel.Win32Exception]::new('missing') }
+            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $null -ne $Name -and ($Name -contains 'LabVIEW') } -MockWith { @() }
+            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $null -ne $Id } -MockWith { throw [System.ComponentModel.Win32Exception]::new('missing') }
             $result = Start-LabVIEWPidTracker -TrackerPath $tracker -Source 'tests'
             $result.Pid | Should -BeNullOrEmpty
             $result.Observation.note | Should -Be 'labview-not-running'
@@ -151,8 +153,8 @@ Describe 'LabVIEW PID tracker helpers' -Tag 'Unit','Tools','LabVIEWPidTracker' {
 
         It 'persists labview-not-running note in tracker file' {
             $tracker = Join-Path $TestDrive 'noproc-file' 'tracker.json'
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters['Name'] -eq 'LabVIEW' } -MockWith { @() }
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters.ContainsKey('Id') } -MockWith { throw [System.ComponentModel.Win32Exception]::new('missing') }
+            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $null -ne $Name -and ($Name -contains 'LabVIEW') } -MockWith { @() }
+            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $null -ne $Id } -MockWith { throw [System.ComponentModel.Win32Exception]::new('missing') }
             $result = Start-LabVIEWPidTracker -TrackerPath $tracker -Source 'tests'
             $result.Observation.note | Should -Be 'labview-not-running'
             $record = Get-Content $tracker -Raw | ConvertFrom-Json -Depth 6
@@ -163,13 +165,13 @@ Describe 'LabVIEW PID tracker helpers' -Tag 'Unit','Tools','LabVIEWPidTracker' {
         It 'finalizes tracker when tracked process is gone' {
             $tracker = Join-Path $TestDrive 'pid-finalize' 'tracker.json'
             $null = Start-LabVIEWPidTracker -TrackerPath $tracker -Source 'tests'
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters.ContainsKey('Id') } -MockWith {
+            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $null -ne $Id } -MockWith {
                 throw [System.ComponentModel.Win32Exception]::new("process not running")
             } -Verifiable
             $result = Stop-LabVIEWPidTracker -TrackerPath $tracker -Source 'tests'
             $result.Observation.action | Should -Be 'finalize'
             $result.Observation.running | Should -BeFalse
-            $result.Observation.note | Should -Be 'no-tracked-pid'
+            $result.Observation.note | Should -Be 'not-running'
             $record = Get-Content $tracker -Raw | ConvertFrom-Json -Depth 6
             ($record.observations | Select-Object -Last 1).action | Should -Be 'finalize'
         }
@@ -187,7 +189,7 @@ Describe 'LabVIEW PID tracker helpers' -Tag 'Unit','Tools','LabVIEWPidTracker' {
                 observations = @()
             }
             $state | ConvertTo-Json -Depth 6 | Set-Content -Path $tracker
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters.ContainsKey('Id') } -MockWith {
+            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $null -ne $Id } -MockWith {
                 throw [System.ComponentModel.Win32Exception]::new("gone")
             }
             $context = @{
@@ -214,12 +216,7 @@ Describe 'LabVIEW PID tracker helpers' -Tag 'Unit','Tools','LabVIEWPidTracker' {
                 observations = @()
             }
             $state | ConvertTo-Json -Depth 6 | Set-Content -Path $tracker
-            Mock -ModuleName LabVIEWPidTracker -CommandName Get-Process -ParameterFilter { $PSBoundParameters.ContainsKey('Id') } -MockWith {
-                if ($Id -eq 8888) {
-                    return [pscustomobject]@{ Id = 8888; ProcessName = 'LabVIEW' }
-                }
-                throw [System.ComponentModel.Win32Exception]::new("Process $Id not found")
-            }
+            $script:labProcess.Id = 8888
             $result = Stop-LabVIEWPidTracker -TrackerPath $tracker -Source 'tests'
             $result.Observation.note | Should -Be 'still-running'
             $result.Running | Should -BeTrue
