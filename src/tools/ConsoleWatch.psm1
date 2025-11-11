@@ -12,14 +12,13 @@ Start-ConsoleWatch: brief description (TODO: refine).
 Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Start-ConsoleWatch {
-
-    # ShouldProcess guard: honor -WhatIf / -Confirm
-    if (-not $PSCmdlet.ShouldProcess($MyInvocation.MyCommand.Name, 'Execute')) { return }
   [CmdletBinding()]
   param(
     [Parameter(Mandatory)][string]$OutDir,
     [string[]]$Targets = @('conhost','pwsh','powershell','cmd','wt')
   )
+    # ShouldProcess guard: honor -WhatIf / -Confirm
+    if (-not $PSCmdlet.ShouldProcess($MyInvocation.MyCommand.Name, 'Execute')) { return }
   if (-not (Test-Path -LiteralPath $OutDir -PathType Container)) { try { New-Item -ItemType Directory -Force -Path $OutDir | Out-Null } catch {} }
   $id = 'ConsoleWatch_' + ([guid]::NewGuid().ToString('n'))
   $ndjson = Join-Path $OutDir 'console-spawns.ndjson'

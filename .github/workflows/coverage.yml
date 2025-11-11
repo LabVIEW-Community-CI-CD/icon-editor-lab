@@ -92,7 +92,8 @@ jobs:
             'src/tests/tools/LabVIEWPidTracker.Unit.Tests.ps1',
             'src/tests/tools/Once-Guard.Unit.Tests.ps1',
             'src/tests/tools/RunnerProfile.Utility.Tests.ps1',
-            'src/tests/tools/Timing.Tick.Unit.Tests.ps1'
+            'src/tests/tools/Timing.Tick.Unit.Tests.ps1',
+            'src/tests/tools/ConsoleWatch.Unit.Tests.ps1'
           )
           $paths = @()
           foreach ($target in $safeTargets) {
