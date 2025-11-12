@@ -115,13 +115,17 @@ jobs:
           if ($hasSecrets) {
             "HAS_PROD_CERT=true"  | Out-File -FilePath $env:GITHUB_ENV    -Encoding UTF8 -Append
             "has_prod_cert=true"  | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding UTF8 -Append
-            Write-Host "Real code-signing secrets detected; enabling prod signing."
+            $msg = "Real code-signing secrets detected; using protected signing path."
+            Write-Host "::notice::$msg"
+            if ($env:GITHUB_STEP_SUMMARY) { Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- $msg" }
           } elseif ($owner -eq 'LabVIEW-Community-CI-CD') {
             throw "Missing WIN_CODESIGN_PFX_B64 or WIN_CODESIGN_PFX_PASSWORD in environment codesign-dev."
           } else {
             "HAS_PROD_CERT=false" | Out-File -FilePath $env:GITHUB_ENV    -Encoding UTF8 -Append
             "has_prod_cert=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding UTF8 -Append
-            Write-Warning "No code-signing secrets detected (fork mode). Proceeding with ephemeral cert."
+            $msg = "Fork mode: no WIN_CODESIGN_PFX_* secrets. Signing will use an ephemeral CI cert; see docs/testing.md to generate test secrets."
+            Write-Warning $msg
+            if ($env:GITHUB_STEP_SUMMARY) { Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- $msg" }
           }
 
       - name: Decode PFX (temp file)
@@ -324,13 +328,17 @@ jobs:
           if ($hasSecrets) {
             "HAS_PROD_CERT=true"  | Out-File -FilePath $env:GITHUB_ENV    -Encoding UTF8 -Append
             "has_prod_cert=true"  | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding UTF8 -Append
-            Write-Host "Real code-signing secrets detected; enabling prod signing."
+            $msg = "Real code-signing secrets detected; prod signing enabled."
+            Write-Host "::notice::$msg"
+            if ($env:GITHUB_STEP_SUMMARY) { Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- $msg" }
           } elseif ($owner -eq 'LabVIEW-Community-CI-CD') {
             throw "Missing WIN_CODESIGN_PFX_B64 or WIN_CODESIGN_PFX_PASSWORD in environment codesign-prod."
           } else {
             "HAS_PROD_CERT=false" | Out-File -FilePath $env:GITHUB_ENV    -Encoding UTF8 -Append
             "has_prod_cert=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding UTF8 -Append
-            Write-Warning "No code-signing secrets detected (fork mode). Proceeding with ephemeral cert."
+            $msg = "Fork tag run without WIN_CODESIGN_PFX_* secrets; using ephemeral cert instead (see docs/testing.md)."
+            Write-Warning $msg
+            if ($env:GITHUB_STEP_SUMMARY) { Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- $msg" }
           }
 
       - name: Decode PFX (temp file)
