@@ -23,6 +23,25 @@ $includeMatchers = @(
 if ($includeMatchers.Count -eq 0) {
   $includeMatchers = @([System.Management.Automation.WildcardPattern]::new('*','IgnoreCase'))
 }
+function Get-GitTrackedFiles {
+  param()
+  $gitDir = Join-Path $SearchRoot '.git'
+  if (-not (Test-Path -LiteralPath $gitDir -PathType Container)) {
+    return @()
+  }
+  Push-Location $SearchRoot
+  try {
+    $arguments = @('ls-files','-z','--','*.ps1','*.psm1')
+    $output = & git @arguments 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $output) {
+      return @()
+    }
+    return $output -split "`0" | Where-Object { $_ }
+  }
+  finally {
+    Pop-Location
+  }
+}
 function Get-CodeSigningCert {
   param([string]$Thumbprint)
   if ($Thumbprint) {
@@ -34,7 +53,18 @@ function Get-CodeSigningCert {
   return $c
 }
 $cert = Get-CodeSigningCert -Thumbprint $Thumbprint
-$candidates = @(Get-ChildItem -LiteralPath $SearchRoot -Recurse -File)
+$gitCandidates = Get-GitTrackedFiles
+if ($gitCandidates.Count -gt 0) {
+  $candidates = @(
+    $gitCandidates | ForEach-Object {
+      $path = Join-Path $SearchRoot $_
+      if (Test-Path -LiteralPath $path -PathType Leaf) { Get-Item -LiteralPath $path }
+    } | Where-Object { $_ }
+  )
+}
+else {
+  $candidates = @(Get-ChildItem -LiteralPath $SearchRoot -Recurse -File)
+}
 Write-Host ("Discovered {0} candidate file(s) before filtering." -f $candidates.Count)
 $files = @($candidates | Where-Object {
   $rel = $_.FullName.Substring($SearchRoot.Length).TrimStart('\','/')
