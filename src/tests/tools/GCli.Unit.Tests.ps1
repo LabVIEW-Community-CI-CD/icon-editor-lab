@@ -337,6 +337,42 @@ function New-GCliProvider { throw "boom" }
                 $invoke.Arguments | Should -HaveCount 0
             }
         }
+
+        It 'selects manager-specific provider when multiple candidates support the operation' {
+            InModuleScope GCli {
+                $vipmProvider = New-TestGCliProvider -Name 'Vipm' -Manager 'vipm' -Supports { $true } -ArgsBuilder { param($op,$params) @('--vipm',$op) }
+                $nipmProvider = New-TestGCliProvider -Name 'Nipm' -Manager 'nipm' -Supports { $true } -ArgsBuilder { param($op,$params) @('--nipm',$op) }
+                Register-GCliProvider -Provider $vipmProvider -Confirm:$false
+                Register-GCliProvider -Provider $nipmProvider -Confirm:$false
+
+                $vipmInvoke = Get-GCliInvocation -Operation 'deploy' -Manager 'vipm'
+                $vipmInvoke.Provider | Should -Be 'Vipm'
+                $vipmInvoke.Arguments | Should -Contain '--vipm'
+
+                $nipmInvoke = Get-GCliInvocation -Operation 'deploy' -Manager 'nipm'
+                $nipmInvoke.Provider | Should -Be 'Nipm'
+                $nipmInvoke.Arguments | Should -Contain '--nipm'
+            }
+        }
+
+        It 'lists available providers when manager filter has no matches' {
+            InModuleScope GCli {
+                $vipmProvider = New-TestGCliProvider -Name 'Vipm' -Manager 'vipm' -Supports { param($op) $op -eq 'build' }
+                $nipmProvider = New-TestGCliProvider -Name 'Nipm' -Manager 'nipm' -Supports { param($op) $op -eq 'build' }
+                Register-GCliProvider -Provider $vipmProvider -Confirm:$false
+                Register-GCliProvider -Provider $nipmProvider -Confirm:$false
+                $exception = $null
+                try {
+                    Get-GCliInvocation -Operation 'deploy' -Manager 'labviewcli'
+                    throw 'Expected Get-GCliInvocation to fail when manager has no matches.'
+                } catch {
+                    $exception = $_
+                }
+                $exception | Should -Not -BeNullOrEmpty
+                $exception.Exception.Message | Should -Match 'Vipm'
+                $exception.Exception.Message | Should -Match 'Nipm'
+            }
+        }
     }
 
     Context 'Support utilities' {
