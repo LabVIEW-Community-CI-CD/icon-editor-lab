@@ -151,9 +151,27 @@ jobs:
             param([string]$Path,[string]$Thumb,[int]$TimeoutSec)
             $sw = [System.Diagnostics.Stopwatch]::StartNew()
             $sb = { param($p,$t) $c = Get-ChildItem "Cert:\CurrentUser\My\$t"; Set-AuthenticodeSignature -FilePath $p -Certificate $c -HashAlgorithm SHA256 | Out-Null }
-            $job = Start-Job -ScriptBlock $sb -ArgumentList $Path,$Thumb
-            if (-not (Wait-Job $job -Timeout $TimeoutSec)) { try { Stop-Job $job -Force } catch {} ; $sw.Stop(); return @{ status='timeout'; ms=$sw.ElapsedMilliseconds } }
-            try { Receive-Job $job -ErrorAction Stop | Out-Null; $sw.Stop(); return @{ status='ok'; ms=$sw.ElapsedMilliseconds } } catch { $sw.Stop(); return @{ status='error'; error=$_.Exception.Message; ms=$sw.ElapsedMilliseconds } }
+            if (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue) {
+              $job = Start-ThreadJob -ScriptBlock $sb -ArgumentList $Path,$Thumb
+            } else {
+              $job = Start-Job -ScriptBlock $sb -ArgumentList $Path,$Thumb
+            }
+            try {
+              if (-not (Wait-Job $job -Timeout $TimeoutSec)) {
+                try { Stop-Job $job -Force } catch {}
+                try { Receive-Job $job -ErrorAction SilentlyContinue | Out-Null } catch {}
+                return @{ status='timeout'; ms=$sw.ElapsedMilliseconds }
+              }
+              try {
+                Receive-Job $job -ErrorAction Stop | Out-Null
+                return @{ status='ok'; ms=$sw.ElapsedMilliseconds }
+              } catch {
+                return @{ status='error'; error=$_.Exception.Message; ms=$sw.ElapsedMilliseconds }
+              }
+            } finally {
+              $sw.Stop()
+              try { Remove-Job $job -Force -ErrorAction SilentlyContinue } catch {}
+            }
           }
 
           $i=0; $fail=0; $timeout=[int]$env:TS_TIMEOUT_SEC
@@ -193,9 +211,27 @@ jobs:
             param([string]$Path,[string]$Thumb,[int]$TimeoutSec,[string]$TimestampUrl,[bool]$UseTs)
             $sw = [System.Diagnostics.Stopwatch]::StartNew()
             $sb = { param($p,$t,$tsa,$useTS) $c = Get-ChildItem "Cert:\CurrentUser\My\$t"; if ($useTS -and $tsa) { Set-AuthenticodeSignature -FilePath $p -Certificate $c -TimestampServer $tsa -HashAlgorithm SHA256 | Out-Null } else { Set-AuthenticodeSignature -FilePath $p -Certificate $c -HashAlgorithm SHA256 | Out-Null } }
-            $job = Start-Job -ScriptBlock $sb -ArgumentList $Path,$Thumb,$TimestampUrl,$UseTs
-            if (-not (Wait-Job $job -Timeout $TimeoutSec)) { try { Stop-Job $job -Force } catch {} ; $sw.Stop(); return @{ status='timeout'; ms=$sw.ElapsedMilliseconds } }
-            try { Receive-Job $job -ErrorAction Stop | Out-Null; $sw.Stop(); return @{ status='ok'; ms=$sw.ElapsedMilliseconds } } catch { $sw.Stop(); return @{ status='error'; error=$_.Exception.Message; ms=$sw.ElapsedMilliseconds } }
+            if (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue) {
+              $job = Start-ThreadJob -ScriptBlock $sb -ArgumentList $Path,$Thumb,$TimestampUrl,$UseTs
+            } else {
+              $job = Start-Job -ScriptBlock $sb -ArgumentList $Path,$Thumb,$TimestampUrl,$UseTs
+            }
+            try {
+              if (-not (Wait-Job $job -Timeout $TimeoutSec)) {
+                try { Stop-Job $job -Force } catch {}
+                try { Receive-Job $job -ErrorAction SilentlyContinue | Out-Null } catch {}
+                return @{ status='timeout'; ms=$sw.ElapsedMilliseconds }
+              }
+              try {
+                Receive-Job $job -ErrorAction Stop | Out-Null
+                return @{ status='ok'; ms=$sw.ElapsedMilliseconds }
+              } catch {
+                return @{ status='error'; error=$_.Exception.Message; ms=$sw.ElapsedMilliseconds }
+              }
+            } finally {
+              $sw.Stop()
+              try { Remove-Job $job -Force -ErrorAction SilentlyContinue } catch {}
+            }
           }
 
           $i=0; $fail=0; $timeout=[int]$env:TS_TIMEOUT_SEC
@@ -310,9 +346,27 @@ jobs:
             param([string]$Path,[string]$Thumb,[int]$TimeoutSec,[string]$TimestampUrl,[bool]$UseTs)
             $sw = [System.Diagnostics.Stopwatch]::StartNew()
             $sb = { param($p,$t,$tsa,$useTS) $c = Get-ChildItem "Cert:\CurrentUser\My\$t"; if ($useTS -and $tsa) { Set-AuthenticodeSignature -FilePath $p -Certificate $c -TimestampServer $tsa -HashAlgorithm SHA256 | Out-Null } else { Set-AuthenticodeSignature -FilePath $p -Certificate $c -HashAlgorithm SHA256 | Out-Null } }
-            $job = Start-Job -ScriptBlock $sb -ArgumentList $Path,$Thumb,$TimestampUrl,$UseTs
-            if (-not (Wait-Job $job -Timeout $TimeoutSec)) { try { Stop-Job $job -Force } catch {} ; $sw.Stop(); return @{ status='timeout'; ms=$sw.ElapsedMilliseconds } }
-            try { Receive-Job $job -ErrorAction Stop | Out-Null; $sw.Stop(); return @{ status='ok'; ms=$sw.ElapsedMilliseconds } } catch { $sw.Stop(); return @{ status='error'; error=$_.Exception.Message; ms=$sw.ElapsedMilliseconds } }
+            if (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue) {
+              $job = Start-ThreadJob -ScriptBlock $sb -ArgumentList $Path,$Thumb,$TimestampUrl,$UseTs
+            } else {
+              $job = Start-Job -ScriptBlock $sb -ArgumentList $Path,$Thumb,$TimestampUrl,$UseTs
+            }
+            try {
+              if (-not (Wait-Job $job -Timeout $TimeoutSec)) {
+                try { Stop-Job $job -Force } catch {}
+                try { Receive-Job $job -ErrorAction SilentlyContinue | Out-Null } catch {}
+                return @{ status='timeout'; ms=$sw.ElapsedMilliseconds }
+              }
+              try {
+                Receive-Job $job -ErrorAction Stop | Out-Null
+                return @{ status='ok'; ms=$sw.ElapsedMilliseconds }
+              } catch {
+                return @{ status='error'; error=$_.Exception.Message; ms=$sw.ElapsedMilliseconds }
+              }
+            } finally {
+              $sw.Stop()
+              try { Remove-Job $job -Force -ErrorAction SilentlyContinue } catch {}
+            }
           }
 
           $i=0; $fail=0; $timeout=[int]$env:TS_TIMEOUT_SEC
