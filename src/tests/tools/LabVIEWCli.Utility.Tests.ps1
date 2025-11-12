@@ -189,6 +189,9 @@ function New-LVProvider { return $null }
                     @('--run',$params.viPath)
                 }
                 Register-LVProvider -Provider $provider -Confirm:$false
+                Mock -ModuleName LabVIEWCli -CommandName Initialize-LabVIEWCliPidTracker -MockWith {
+                    throw 'Preview path should not touch PID tracker initialization.'
+                }
                 $result = Invoke-LVOperation -Operation 'RunVI' -Params @{ viPath = 'C:\proj\demo.vi' } -Provider 'Previewer' -Preview
                 $result.provider | Should -Be 'Previewer'
                 $result.command | Should -Match '--run'
@@ -233,6 +236,100 @@ function New-LVProvider { return $null }
                 $selected = Select-LVProvider -Operation 'RunVI' -RequestedProvider 'auto' -Confirm:$false
                 $selected.ProviderName | Should -Be 'Beta'
             } -ArgumentList $binary
+        }
+
+        It 'skips providers with missing binaries when auto-selecting' {
+            $valid = Join-Path $TestDrive 'lvcli-valid.exe'
+            Set-Content -Path $valid -Value '' | Out-Null
+            InModuleScope LabVIEWCli {
+                param($binPath)
+                $script:Providers.Clear()
+                $alpha = New-TestLVProvider -Name 'Alpha' -BinaryPath (Join-Path $env:TEMP 'missing.exe') -Supports { param($op) $true }
+                $beta  = New-TestLVProvider -Name 'Beta'  -BinaryPath $binPath -Supports { param($op) $op -eq 'RunVI' }
+                Register-LVProvider -Provider $alpha -Confirm:$false
+                Register-LVProvider -Provider $beta -Confirm:$false
+                $selected = Select-LVProvider -Operation 'RunVI' -RequestedProvider 'auto' -Confirm:$false
+                $selected.ProviderName | Should -Be 'Beta'
+                $selected.Binary | Should -Be (Resolve-Path $binPath).Path
+            } -ArgumentList $valid
+        }
+    }
+
+    Context 'Invoke-LVOperation runtime behavior' {
+        It 'injects PID tracker payload after a successful run' {
+            $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
+            InModuleScope LabVIEWCli {
+                param($shell)
+                $script:Providers.Clear()
+                $provider = New-TestLVProvider -Name 'Shell' -BinaryPath $shell -Supports { param($op) $true } -ArgsBuilder {
+                    param($op,$params) @('-NoLogo','-Command',"Write-Output 'cli-ok'")
+                }
+                Register-LVProvider -Provider $provider -Confirm:$false
+                Mock -ModuleName LabVIEWCli -CommandName Set-LVHeadlessEnv -MockWith { @{} }
+                Mock -ModuleName LabVIEWCli -CommandName Restore-LVHeadlessEnv -MockWith { }
+                Mock -ModuleName LabVIEWCli -CommandName Initialize-LabVIEWCliPidTracker -MockWith {
+                    $script:LabVIEWPidTrackerLoaded = $true
+                    $script:LabVIEWPidTrackerPath = Join-Path $env:TEMP 'labview-pid.json'
+                    $script:LabVIEWPidTrackerRelativePath = 'tests/results/_cli/_agent/labview-pid.json'
+                    $state = [pscustomobject]@{ Pid = 4321; Reused = $false }
+                    $script:LabVIEWPidTrackerState = $state
+                    $script:LabVIEWPidTrackerInitialState = $state
+                }
+                Mock -ModuleName LabVIEWCli -CommandName Finalize-LabVIEWCliPidTracker -MockWith {
+                    param($Source,$Operation,$Provider,$ExitCode,$TimedOut,$CliArgs,$ElapsedSeconds,$Binary,$ErrorMessage)
+                    $script:LabVIEWPidTrackerFinalState = [pscustomobject]@{
+                        Observation  = [pscustomobject]@{ action = 'finalize'; note = 'ok' }
+                        Context      = [pscustomobject]@{ stage = $Source; exitCode = $ExitCode; provider = $Provider }
+                        ContextSource= $Source
+                    }
+                    $script:LabVIEWPidTrackerFinalized = $true
+                    $script:LabVIEWPidTrackerFinalContext = $script:LabVIEWPidTrackerFinalState.Context
+                    $script:LabVIEWPidTrackerFinalContextSource = $Source
+                }
+
+                $result = Invoke-LVOperation -Operation 'RunVI' -Params @{ viPath = 'C:\proj\demo.vi' } -Provider 'Shell' -TimeoutSeconds 5
+                $result.ok | Should -BeTrue
+                $result | Get-Member -Name labviewPidTracker | Should -Not -BeNullOrEmpty
+                $result.labviewPidTracker.final.context.provider | Should -Be 'Shell'
+                $result.labviewPidTracker.final.observation.note | Should -Be 'ok'
+                Assert-MockCalled -ModuleName LabVIEWCli -CommandName Finalize-LabVIEWCliPidTracker -Times 1
+            } -ArgumentList $pwsh
+        }
+
+        It 'throws on timeout and finalizes PID tracker with error context' {
+            $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
+            InModuleScope LabVIEWCli {
+                param($shell)
+                $script:Providers.Clear()
+                $provider = New-TestLVProvider -Name 'Slow' -BinaryPath $shell -Supports { param($op) $true } -ArgsBuilder {
+                    param($op,$params) @('-NoLogo','-Command','Start-Sleep -Seconds 2')
+                }
+                Register-LVProvider -Provider $provider -Confirm:$false
+                Mock -ModuleName LabVIEWCli -CommandName Set-LVHeadlessEnv -MockWith { @{} }
+                Mock -ModuleName LabVIEWCli -CommandName Restore-LVHeadlessEnv -MockWith { }
+                Mock -ModuleName LabVIEWCli -CommandName Initialize-LabVIEWCliPidTracker -MockWith {
+                    $script:LabVIEWPidTrackerLoaded = $true
+                    $script:LabVIEWPidTrackerPath = Join-Path $env:TEMP 'labview-pid-timeout.json'
+                    $state = [pscustomobject]@{ Pid = 999; Reused = $false }
+                    $script:LabVIEWPidTrackerState = $state
+                    $script:LabVIEWPidTrackerInitialState = $state
+                }
+                $script:lastFinalize = $null
+                Mock -ModuleName LabVIEWCli -CommandName Finalize-LabVIEWCliPidTracker -MockWith {
+                    param($Source,$Operation,$Provider,$ExitCode,$TimedOut,$CliArgs,$ElapsedSeconds,$Binary,$ErrorMessage)
+                    $script:lastFinalize = [pscustomobject]@{
+                        Source    = $Source
+                        TimedOut  = $TimedOut
+                        Error     = $ErrorMessage
+                        Provider  = $Provider
+                    }
+                }
+
+                { Invoke-LVOperation -Operation 'RunVI' -Params @{ viPath = 'C:\proj\slow.vi' } -Provider 'Slow' -TimeoutSeconds 0 } | Should -Throw '*timed out*'
+                $script:lastFinalize | Should -Not -BeNullOrEmpty
+                $script:lastFinalize.TimedOut | Should -BeTrue
+                $script:lastFinalize.Error | Should -Match 'timed out'
+            } -ArgumentList $pwsh
         }
     }
 }
