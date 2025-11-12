@@ -51,6 +51,9 @@ jobs:
           if (-not $cert) {
             Write-Warning 'No code-signing certificate detected; generating an ephemeral one for this run.'
             $cert = New-SelfSignedCertificate -Type CodeSigning -Subject 'CN=IconEditorLab Dev Signing' -CertStoreLocation 'Cert:\CurrentUser\My'
+            $tmp = Join-Path $env:TEMP "icon-editor-lab-devsigning.cer"
+            Export-Certificate -Cert $cert -FilePath $tmp | Out-Null
+            Import-Certificate -FilePath $tmp -CertStoreLocation 'Cert:\CurrentUser\TrustedPublisher' | Out-Null
           }
           ./tools/Sign-Scripts.ps1 -Thumbprint $cert.Thumbprint
 
