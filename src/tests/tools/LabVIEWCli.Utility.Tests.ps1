@@ -331,5 +331,58 @@ function New-LVProvider { return $null }
                 $script:lastFinalize.Error | Should -Match 'timed out'
             } -ArgumentList $pwsh
         }
+
+        It 'finalizes tracker with fallback context when initialization fails' {
+            $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
+            InModuleScope LabVIEWCli {
+                param($shell)
+                $script:Providers.Clear()
+                $provider = New-TestLVProvider -Name 'Shell' -BinaryPath $shell -Supports { param($op) $true } -ArgsBuilder {
+                    param($op,$params) @('-NoLogo','-Command',"Write-Output 'cli-ok'")
+                }
+                Register-LVProvider -Provider $provider -Confirm:$false
+                Mock -ModuleName LabVIEWCli -CommandName Initialize-LabVIEWCliPidTracker -MockWith {
+                    $script:LabVIEWPidTrackerLoaded = $false
+                    $script:LabVIEWPidTrackerPath = $null
+                    throw 'init failed'
+                }
+                Mock -ModuleName LabVIEWCli -CommandName Finalize-LabVIEWCliPidTracker -MockWith { throw 'should not finalize' }
+                Mock -ModuleName LabVIEWCli -CommandName Write-LVOperationEvent -MockWith { }
+                try {
+                    Invoke-LVOperation -Operation 'RunVI' -Params @{ viPath = 'C:\proj\demo.vi' } -Provider 'Shell' -TimeoutSeconds 5 | Out-Null
+                } catch {}
+                $payload = Get-LabVIEWCliPidTracker
+                $payload.final.context.exitCode | Should -Be 0
+                $payload.final.contextSource | Should -Be 'labview-cli:operation'
+            } -ArgumentList $pwsh
+        }
+
+        It 'enforces sentinel TTL suppression with warning guards' {
+            $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
+            $vi1 = Join-Path $TestDrive 'base.vi'
+            $vi2 = Join-Path $TestDrive 'head.vi'
+            Set-Content -Path $vi1 -Value '' | Out-Null
+            Set-Content -Path $vi2 -Value '' | Out-Null
+            Set-Item Env:COMPAREVI_CLI_SENTINEL_TTL -Value '120'
+            Set-Item Env:COMPAREVI_WARN_CLI_IN_GIT -Value '1'
+            Set-Item Env:COMPAREVI_SUPPRESS_CLI_IN_GIT -Value '1'
+            Set-Item Env:GIT_DIR -Value '.git'
+            $sentinel = Join-Path $TestDrive 'comparevi.sentinel'
+            Set-Content -Path $sentinel -Value '' -Encoding utf8
+            (Get-Item $sentinel).LastWriteTimeUtc = [DateTime]::UtcNow
+            Mock -ModuleName LabVIEWCli -CommandName Get-CompareCliSentinelPath -MockWith { $sentinel }
+            InModuleScope LabVIEWCli {
+                param($shell,$baseVi,$headVi)
+                $script:Providers.Clear()
+                $provider = New-TestLVProvider -Name 'Shell' -BinaryPath $shell -Supports { param($op) $op -eq 'CreateComparisonReport' } -ArgsBuilder {
+                    param($op,$params) @('-NoLogo','-Command',"Write-Output 'compare'")
+                }
+                Register-LVProvider -Provider $provider -Confirm:$false
+                $result = Invoke-LVOperation -Operation 'CreateComparisonReport' -Params @{ vi1 = $baseVi; vi2 = $headVi } -Provider 'Shell' -TimeoutSeconds 5
+                $result.skipped | Should -BeTrue
+                $result.skipReason | Should -Be 'git-context'
+            } -ArgumentList $pwsh,$vi1,$vi2
+            Remove-Item Env:COMPAREVI_CLI_SENTINEL_TTL,Env:COMPAREVI_WARN_CLI_IN_GIT,Env:COMPAREVI_SUPPRESS_CLI_IN_GIT,Env:GIT_DIR -ErrorAction SilentlyContinue
+        }
     }
 }
