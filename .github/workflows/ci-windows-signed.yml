@@ -55,7 +55,12 @@ jobs:
             $tmp = Join-Path $env:TEMP "icon-editor-lab-devsigning.cer"
             Export-Certificate -Cert $cert -FilePath $tmp | Out-Null
             Import-Certificate -FilePath $tmp -CertStoreLocation 'Cert:\CurrentUser\TrustedPublisher' | Out-Null
-            Import-Certificate -FilePath $tmp -CertStoreLocation 'Cert:\CurrentUser\Root' | Out-Null
+            $certutilArgs = @('-user','-f','-addstore','Root',$tmp)
+            & certutil.exe @certutilArgs | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+              throw "certutil failed to import the ephemeral signing cert into the Root store (exit code $LASTEXITCODE)."
+            }
+            Write-Host 'Trusted the dev signing certificate in the CurrentUser Root store via certutil.'
             $skipTimestamp = $true
           }
           ./tools/Sign-Scripts.ps1 -Thumbprint $cert.Thumbprint -SkipTimestamp:$skipTimestamp
