@@ -247,6 +247,38 @@ Describe 'RunnerProfile utility helpers' -Tag 'Unit','Tools','RunnerProfile' {
 
     }
 
+    Context 'Invoke-RunnerJobsApi CLI path' {
+        It 'parses gh cli output when available' {
+            $env:GH_TOKEN = 'gho_mock'
+            InModuleScope RunnerProfile {
+                Mock -ModuleName RunnerProfile -CommandName Get-Command -MockWith {
+                    [pscustomobject]@{
+                        Source = {
+                            param([Parameter(ValueFromRemainingArguments=$true)][object[]]$Args)
+                            Set-Variable -Name LASTEXITCODE -Scope Global -Value 0
+                            @'
+{
+  "jobs": [
+    {
+      "runner_name": "runner-cli",
+      "labels": ["self-hosted","cli"],
+      "status": "completed"
+    }
+  ]
+}
+'@
+                        }
+                    }
+                }
+                Mock -ModuleName RunnerProfile -CommandName Invoke-RestMethod -MockWith { throw 'REST path should not execute' }
+                $jobs = Invoke-RunnerJobsApi -Repository 'contoso/cli' -RunId '123'
+                $jobs | Should -Not -BeNullOrEmpty
+                $jobs[0].runner_name | Should -Be 'runner-cli'
+                $jobs[0].labels | Should -Contain 'cli'
+            }
+        }
+    }
+
     Context 'Get-RunnerProfile' {
         It 'combines env fields and cached labels' {
             $env:RUNNER_LABELS = 'linux,windows'
@@ -282,6 +314,52 @@ Describe 'RunnerProfile utility helpers' -Tag 'Unit','Tools','RunnerProfile' {
             }
         }
 
+        It 'returns instrumentation-disabled profile when module toggle is off' {
+            InModuleScope RunnerProfile {
+                $original = $script:RunnerProfileInstrumentationEnabled
+                $script:RunnerProfileInstrumentationEnabled = $false
+                try {
+                    $profile = Get-RunnerProfile
+                    $profile.instrumentationDisabled | Should -BeTrue
+                    $profile.labels | Should -BeNullOrEmpty
+                }
+                finally {
+                    $script:RunnerProfileInstrumentationEnabled = $original
+                }
+            }
+        }
+
+        It 'respects the DisableInstrumentation switch' {
+            $profile = InModuleScope RunnerProfile { Get-RunnerProfile -DisableInstrumentation }
+            $profile.instrumentationDisabled | Should -BeTrue
+        }
+
+    }
+
+    Context 'Module helper functions' {
+        It 'Test-ValidLabel accepts good labels' {
+            InModuleScope RunnerProfile {
+                Test-ValidLabel -Label 'runner_profile-1'
+            }
+        }
+
+        It 'Test-ValidLabel rejects bad labels' {
+            InModuleScope RunnerProfile {
+                { Test-ValidLabel -Label 'bad label!' } | Should -Throw '*Invalid label*'
+            }
+        }
+
+        It 'Invoke-WithTimeout returns script block result' {
+            InModuleScope RunnerProfile {
+                Invoke-WithTimeout -ScriptBlock { 2 + 5 } -TimeoutSec 5 | Should -Be 7
+            }
+        }
+
+        It 'Invoke-WithTimeout throws when timeout exceeded' {
+            InModuleScope RunnerProfile {
+                { Invoke-WithTimeout -ScriptBlock { Start-Sleep -Milliseconds 500 } -TimeoutSec 0 } | Should -Throw '*timed out*'
+            }
+        }
+
     }
 }
-
