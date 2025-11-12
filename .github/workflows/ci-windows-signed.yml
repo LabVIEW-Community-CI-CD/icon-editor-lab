@@ -49,8 +49,8 @@ jobs:
             $_.HasPrivateKey -and $_.EnhancedKeyUsageList.FriendlyName -contains 'Code Signing'
           } | Select-Object -First 1
           if (-not $cert) {
-            Write-Warning 'No code-signing certificate detected; skipping signing step.'
-            return
+            Write-Warning 'No code-signing certificate detected; generating an ephemeral one for this run.'
+            $cert = New-SelfSignedCertificate -Type CodeSigning -Subject 'CN=IconEditorLab Dev Signing' -CertStoreLocation 'Cert:\CurrentUser\My'
           }
           ./tools/Sign-Scripts.ps1 -Thumbprint $cert.Thumbprint
 
