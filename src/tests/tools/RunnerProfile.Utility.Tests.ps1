@@ -282,6 +282,52 @@ Describe 'RunnerProfile utility helpers' -Tag 'Unit','Tools','RunnerProfile' {
             }
         }
 
+        It 'returns instrumentation-disabled profile when module toggle is off' {
+            InModuleScope RunnerProfile {
+                $original = $script:RunnerProfileInstrumentationEnabled
+                $script:RunnerProfileInstrumentationEnabled = $false
+                try {
+                    $profile = Get-RunnerProfile
+                    $profile.instrumentationDisabled | Should -BeTrue
+                    $profile.labels | Should -BeNullOrEmpty
+                }
+                finally {
+                    $script:RunnerProfileInstrumentationEnabled = $original
+                }
+            }
+        }
+
+        It 'respects the DisableInstrumentation switch' {
+            $profile = InModuleScope RunnerProfile { Get-RunnerProfile -DisableInstrumentation }
+            $profile.instrumentationDisabled | Should -BeTrue
+        }
+
+    }
+
+    Context 'Module helper functions' {
+        It 'Test-ValidLabel accepts good labels' {
+            InModuleScope RunnerProfile {
+                Test-ValidLabel -Label 'runner_profile-1'
+            }
+        }
+
+        It 'Test-ValidLabel rejects bad labels' {
+            InModuleScope RunnerProfile {
+                { Test-ValidLabel -Label 'bad label!' } | Should -Throw '*Invalid label*'
+            }
+        }
+
+        It 'Invoke-WithTimeout returns script block result' {
+            InModuleScope RunnerProfile {
+                Invoke-WithTimeout -ScriptBlock { 2 + 5 } -TimeoutSec 5 | Should -Be 7
+            }
+        }
+
+        It 'Invoke-WithTimeout throws when timeout exceeded' {
+            InModuleScope RunnerProfile {
+                { Invoke-WithTimeout -ScriptBlock { Start-Sleep -Milliseconds 500 } -TimeoutSec 0 } | Should -Throw '*timed out*'
+            }
+        }
+
     }
 }
-
