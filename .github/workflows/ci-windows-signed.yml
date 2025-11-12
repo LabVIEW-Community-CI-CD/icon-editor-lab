@@ -40,6 +40,10 @@ jobs:
           "Write-Output 'Sample payload for signing test.'" | Set-Content -Path $samplePs1 -Encoding UTF8
           $sampleExe = Join-Path '${{ env.SIGN_ROOT }}' 'sample.exe'
           [IO.File]::WriteAllBytes($sampleExe, [byte[]](1..16))
+          $realScriptSource = Join-Path $PWD 'tools\Sign-Scripts.ps1'
+          if (Test-Path $realScriptSource) {
+            Copy-Item -Path $realScriptSource -Destination (Join-Path '${{ env.SIGN_ROOT }}' 'Example-Repo-Script.ps1') -Force
+          }
           Write-Host 'Generated placeholder artifacts under ${{ env.SIGN_ROOT }}. Replace this block with actual build steps.'
 
       - name: Self-sign outputs for PRs (ephemeral cert)
