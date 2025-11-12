@@ -7,4 +7,4 @@
 | RQ-0003 | src/tests/tools/LabVIEWCli.Utility.Tests.ps1 | src/tools/LabVIEWCli.psm1 | Coverage workflow curated suite (Windows runner) |
 | RQ-0004 | src/tests/tools/ConsoleWatch.Unit.Tests.ps1 | src/tools/ConsoleWatch.psm1 | PR #32 artifacts + coverage gate |
 | RQ-0005 | src/tests/tools/Vipm.Unit.Tests.ps1 | src/tools/Vipm.psm1 | Vipm coverage runs (curated suite artifact set) |
-| RQ-0006 | src/tests/tools/GCli.Unit.Tests.ps1 | src/tools/GCli.psm1 | GCli coverage runs (curated suite artifact set) |
+| RQ-0006 | src/tests/tools/GCli.Unit.Tests.ps1 | src/tools/GCli.psm1 | PR #35 GCli coverage (artifact `coverage.xml`, PSSA/ADR gate) |
