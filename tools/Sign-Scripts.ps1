@@ -4,7 +4,8 @@ param(
   [Parameter()][string]$Thumbprint,
   [Parameter()][string]$SearchRoot = (Get-Location).Path,
   [Parameter()][string[]]$Include = @("*.ps1","*.psm1"),
-  [Parameter()][string[]]$ExcludeDirs = @(".git",".github",".venv","node_modules")
+  [Parameter()][string[]]$ExcludeDirs = @(".git",".github",".venv","node_modules"),
+  [switch]$SkipTimestamp
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'; $PSModuleAutoLoadingPreference='None'
@@ -48,7 +49,12 @@ $files = @($candidates | Where-Object {
 foreach ($f in $files) {
   $sig = Get-AuthenticodeSignature -LiteralPath $f.FullName
   if ($sig.Status -ne 'Valid') {
-    $null = Set-AuthenticodeSignature -LiteralPath $f.FullName -Certificate $cert -TimestampServer 'http://timestamp.digicert.com'
+    if ($SkipTimestamp) {
+      $null = Set-AuthenticodeSignature -LiteralPath $f.FullName -Certificate $cert
+    }
+    else {
+      $null = Set-AuthenticodeSignature -LiteralPath $f.FullName -Certificate $cert -TimestampServer 'http://timestamp.digicert.com'
+    }
   }
 }
 Write-Output "Signed $($files.Count) script(s)."
