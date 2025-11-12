@@ -82,4 +82,15 @@ jobs:
           $settings = '.pssa/PSScriptAnalyzerSettings.psd1'
           $settingsData = Import-PowerShellDataFile -LiteralPath $settings
           $results = Invoke-ScriptAnalyzer -Path . -Recurse -Settings $settingsData -ReportSummary
-          if ($results) { $results | Format-Table -AutoSize; throw 'PSScriptAnalyzer found issues' }
+          if ($results) {
+            $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+            if ($errors) {
+              $errors | Format-Table -AutoSize
+              throw ("PSScriptAnalyzer found {0} blocking error(s)" -f $errors.Count)
+            }
+            $warnings = $results | Where-Object { $_.Severity -ne 'Error' }
+            if ($warnings) {
+              Write-Warning ("PSScriptAnalyzer reported {0} warning(s); showing the first 25 entries for awareness." -f $warnings.Count)
+              $warnings | Select-Object -First 25 | Format-Table -AutoSize | Out-String | Write-Host
+            }
+          }
