@@ -19,10 +19,10 @@ function Get-CodeSigningCert {
   return $c
 }
 $cert = Get-CodeSigningCert -Thumbprint $Thumbprint
-$files = Get-ChildItem -LiteralPath $SearchRoot -Recurse -File -Include $Include | Where-Object {
+$files = @(Get-ChildItem -LiteralPath $SearchRoot -Recurse -File -Include $Include | Where-Object {
   $rel = $_.FullName.Substring($SearchRoot.Length).TrimStart('\','/')
   -not ($ExcludeDirs | ForEach-Object { $rel -like ("{0}\*" -f $_) })
-}
+})
 foreach ($f in $files) {
   $sig = Get-AuthenticodeSignature -LiteralPath $f.FullName
   if ($sig.Status -ne 'Valid') {
