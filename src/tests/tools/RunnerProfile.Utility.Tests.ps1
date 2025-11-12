@@ -247,6 +247,38 @@ Describe 'RunnerProfile utility helpers' -Tag 'Unit','Tools','RunnerProfile' {
 
     }
 
+    Context 'Invoke-RunnerJobsApi CLI path' {
+        It 'parses gh cli output when available' {
+            $env:GH_TOKEN = 'gho_mock'
+            InModuleScope RunnerProfile {
+                Mock -ModuleName RunnerProfile -CommandName Get-Command -MockWith {
+                    [pscustomobject]@{
+                        Source = {
+                            param([Parameter(ValueFromRemainingArguments=$true)][object[]]$Args)
+                            Set-Variable -Name LASTEXITCODE -Scope Global -Value 0
+                            @'
+{
+  "jobs": [
+    {
+      "runner_name": "runner-cli",
+      "labels": ["self-hosted","cli"],
+      "status": "completed"
+    }
+  ]
+}
+'@
+                        }
+                    }
+                }
+                Mock -ModuleName RunnerProfile -CommandName Invoke-RestMethod -MockWith { throw 'REST path should not execute' }
+                $jobs = Invoke-RunnerJobsApi -Repository 'contoso/cli' -RunId '123'
+                $jobs | Should -Not -BeNullOrEmpty
+                $jobs[0].runner_name | Should -Be 'runner-cli'
+                $jobs[0].labels | Should -Contain 'cli'
+            }
+        }
+    }
+
     Context 'Get-RunnerProfile' {
         It 'combines env fields and cached labels' {
             $env:RUNNER_LABELS = 'linux,windows'
