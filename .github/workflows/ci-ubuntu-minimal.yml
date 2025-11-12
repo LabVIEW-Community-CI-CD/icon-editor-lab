@@ -58,7 +58,8 @@ jobs:
       - name: Run PSScriptAnalyzer
         shell: pwsh
         run: |
-          $settings = '.pssa/PSScriptAnalyzerSettings.psd1'
+          $settingsPath = '.pssa/PSScriptAnalyzerSettings.psd1'
+          $settings = Import-PowerShellDataFile -LiteralPath $settingsPath
           $results = Invoke-ScriptAnalyzer -Path . -Recurse -Settings $settings -ReportSummary
           if ($results) { $results | Format-Table -AutoSize; throw 'PSScriptAnalyzer found issues' }
 
