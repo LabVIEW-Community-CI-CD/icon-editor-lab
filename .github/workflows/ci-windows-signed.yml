@@ -54,6 +54,7 @@ jobs:
             $tmp = Join-Path $env:TEMP "icon-editor-lab-devsigning.cer"
             Export-Certificate -Cert $cert -FilePath $tmp | Out-Null
             Import-Certificate -FilePath $tmp -CertStoreLocation 'Cert:\CurrentUser\TrustedPublisher' | Out-Null
+            Import-Certificate -FilePath $tmp -CertStoreLocation 'Cert:\CurrentUser\Root' | Out-Null
           }
           ./tools/Sign-Scripts.ps1 -Thumbprint $cert.Thumbprint
 
