@@ -128,8 +128,10 @@ jobs:
 
       - name: Sign scripts (Authenticode)
         run: |
-          $pwd = ConvertTo-SecureString '${{ secrets.WIN_CODESIGN_PFX_PASSWORD }}' -AsPlainText -Force
-          $cert = Import-PfxCertificate -FilePath "$env:RUNNER_TEMP\codesign.pfx" -CertStoreLocation Cert:\CurrentUser\My -Password $pwd
+          $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+            "$env:RUNNER_TEMP\codesign.pfx",
+            '${{ secrets.WIN_CODESIGN_PFX_PASSWORD }}',
+            [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserKeySet)
           $tsa = '${{ env.TSA_URL }}'
           $scripts = Get-ChildItem unsigned -Include *.ps1,*.psm1 -Recurse -ErrorAction SilentlyContinue
           foreach ($s in $scripts) {
@@ -210,8 +212,10 @@ jobs:
 
       - name: Sign scripts (Authenticode)
         run: |
-          $pwd = ConvertTo-SecureString '${{ secrets.WIN_CODESIGN_PFX_PASSWORD }}' -AsPlainText -Force
-          $cert = Import-PfxCertificate -FilePath "$env:RUNNER_TEMP\codesign.pfx" -CertStoreLocation Cert:\CurrentUser\My -Password $pwd
+          $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+            "$env:RUNNER_TEMP\codesign.pfx",
+            '${{ secrets.WIN_CODESIGN_PFX_PASSWORD }}',
+            [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserKeySet)
           $tsa = '${{ env.TSA_URL }}'
           $scripts = Get-ChildItem unsigned -Include *.ps1,*.psm1 -Recurse -ErrorAction SilentlyContinue
           foreach ($s in $scripts) {
