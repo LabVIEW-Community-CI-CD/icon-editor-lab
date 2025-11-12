@@ -8,6 +8,13 @@ Describe 'Stage-IconEditorSnapshot.ps1' -Tag 'IconEditor','Snapshot','Unit' {
         Set-Variable -Scope Script -Name fixturePath -Value $env:ICON_EDITOR_FIXTURE_PATH
 
         Test-Path -LiteralPath $script:stageScript | Should -BeTrue
+        if (-not (Test-Path -LiteralPath $script:vendorPath -PathType Container)) {
+            New-Item -ItemType Directory -Path $script:vendorPath -Force | Out-Null
+        }
+        $resourceDir = Join-Path $script:vendorPath 'resource'
+        if (-not (Test-Path -LiteralPath $resourceDir -PathType Container)) {
+            New-Item -ItemType Directory -Path $resourceDir -Force | Out-Null
+        }
         Test-Path -LiteralPath $script:vendorPath | Should -BeTrue
 
         $script:snapshotStubRecords = @()
