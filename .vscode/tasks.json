@@ -1,0 +1,93 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Local CI: Windows (all stages)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "local-ci/windows/Invoke-LocalCI.ps1"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Local CI: Stage 25 DevMode (enable)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "tests/tools/Run-DevMode-Debug.ps1",
+        "-Action",
+        "Enable"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Local CI: Stage 25 DevMode (disable)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "tests/tools/Run-DevMode-Debug.ps1",
+        "-Action",
+        "Disable"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Local CI: Stage 25 DevMode (debug)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "tests/tools/Run-DevMode-Debug.ps1"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "SemVer: Export Bundle",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "tools/Export-SemverBundle.ps1",
+        "-IncludeWorkflow",
+        "-GenerateIssueTemplate",
+        "-Zip"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "SemVer: Verify Bundle",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-Command",
+        "$bundle = pwsh -NoLogo -NoProfile -File tools/Get-LatestSemverBundle.ps1; if (-not $bundle) { throw '[SVB300] No SemVer bundle available. Run \"SemVer: Export Bundle\" first.' } else { pwsh -NoLogo -NoProfile -File tools/Verify-SemverBundle.ps1 -BundlePath $bundle.BundleRoot; pwsh -NoLogo -NoProfile -File tools/Write-SemverSummary.ps1 -BundleRoot $bundle.BundleRoot -WriteHost }"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "SemVer: Export & Verify",
+      "dependsOn": [
+        "SemVer: Export Bundle",
+        "SemVer: Verify Bundle"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ]
+}
