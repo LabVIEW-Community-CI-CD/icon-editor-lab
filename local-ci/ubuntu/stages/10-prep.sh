@@ -25,6 +25,20 @@ if [[ ${#missing[@]} -gt 0 ]]; then
   exit 1
 fi
 
+pwsh -NoLogo -NoProfile -Command - <<'PWSH'
+$ErrorActionPreference = 'Stop'
+function Ensure-Module {
+    param([string]$Name,[version]$Minimum)
+    $have = Get-Module -ListAvailable -Name $Name | Where-Object { $_.Version -ge $Minimum }
+    if (-not $have) {
+        Write-Host "[10-prep] Installing module $Name (>= $Minimum)" -ForegroundColor Yellow
+        Install-Module -Name $Name -MinimumVersion $Minimum -Scope CurrentUser -Force -ErrorAction Stop
+    }
+}
+Ensure-Module -Name Pester -Minimum ([version]'5.4.0')
+Ensure-Module -Name ThreadJob -Minimum ([version]'2.0.0')
+PWSH
+
 preserve_dirs=(local-signing-logs local-ci local-ci-ubuntu)
 for dir in "${preserve_dirs[@]}"; do
   mkdir -p "$LOCALCI_SIGN_ROOT/$dir"

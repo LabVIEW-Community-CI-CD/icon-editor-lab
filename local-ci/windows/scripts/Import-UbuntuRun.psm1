@@ -117,6 +117,27 @@ function Invoke-UbuntuRunImport {
         Expand-Archive -LiteralPath $zipPath -DestinationPath $extractPath -Force
     }
 
+    $expectedHash = $null
+    if ($paths -and $paths.PSObject.Properties.Match('artifact_hash').Count -gt 0) {
+        $expectedHash = $paths.artifact_hash
+    }
+    if (-not $expectedHash -and $manifest.coverage -and $manifest.coverage.PSObject.Properties.Match('hash').Count -gt 0) {
+        $expectedHash = $manifest.coverage.hash
+    }
+    if (-not $expectedHash) {
+        $hashFile = Join-Path (Split-Path -Parent $zipPath) 'checksums.sha256'
+        if (Test-Path -LiteralPath $hashFile) {
+            $line = Get-Content -LiteralPath $hashFile -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($line -match '^[0-9a-fA-F]{64}') { $expectedHash = $line.Substring(0,64) }
+        }
+    }
+    if ($expectedHash) {
+        $zipHash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash
+        if ($zipHash.ToLowerInvariant() -ne $expectedHash.ToLowerInvariant()) {
+            throw "Artifact hash mismatch for '$zipPath'"
+        }
+    }
+
     $coveragePayload = $manifest.coverage
     $coveragePercent = if ($coveragePayload) { $coveragePayload.percent } else { $null }
 
