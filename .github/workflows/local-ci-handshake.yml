@@ -12,6 +12,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: local-ci-handshake-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   ubuntu-handshake:
     runs-on: ubuntu-latest
@@ -149,6 +153,7 @@ jobs:
           python3 scripts/workflows/check_windows_runner_coverage.py
 
   windows-consumer:
+    if: ${{ needs.ubuntu-handshake.result == 'success' && needs.windows-runner-coverage.result != 'failure' }}
     needs:
       - ubuntu-handshake
       - windows-runner-coverage
