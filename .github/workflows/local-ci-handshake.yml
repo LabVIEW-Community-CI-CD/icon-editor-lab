@@ -44,7 +44,6 @@ jobs:
       - name: Run Ubuntu local CI (handshake stages)
         run: |
           bash local-ci/ubuntu/invoke-local-ci.sh \
-            --skip 25-docker \
             --skip 28-docs \
             --skip 30-tests
 

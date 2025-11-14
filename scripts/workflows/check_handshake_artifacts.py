@@ -170,7 +170,15 @@ def main() -> None:
     vi_diff_requests = manifest["vi_diff_requests_file"]
     vi_diff_path = Path(vi_diff_requests)
     if not vi_diff_path.is_absolute():
-        vi_diff_path = (manifest_dir / vi_diff_path).resolve()
+        candidate = (manifest_dir / vi_diff_path).resolve()
+        if candidate.is_file():
+            vi_diff_path = candidate
+        else:
+            repo_candidate = (repo_root / vi_diff_path).resolve()
+            if repo_candidate.is_file():
+                vi_diff_path = repo_candidate
+            else:
+                vi_diff_path = candidate
     ensure_file(vi_diff_path, "vi_diff_requests_file")
 
     pointer = load_json(pointer_path)

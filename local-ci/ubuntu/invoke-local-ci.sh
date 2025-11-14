@@ -126,10 +126,8 @@ write_manifest() {
   git_commit="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || printf 'unknown')"
   local git_branch
   git_branch="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'unknown')"
-  local artifact_rel="out/local-ci-ubuntu/$timestamp/local-ci-artifacts.zip"
   local artifact_abs="$RUN_ROOT/local-ci-artifacts.zip"
   if [[ ! -f "$artifact_abs" ]]; then
-    artifact_rel=""
     artifact_abs=""
   fi
   local coverage_xml="$REPO_ROOT/out/coverage/coverage.xml"
@@ -144,7 +142,6 @@ write_manifest() {
   LOCALCI_TIMESTAMP="$timestamp" \
   LOCALCI_GIT_COMMIT="$git_commit" \
   LOCALCI_GIT_BRANCH="$git_branch" \
-  LOCALCI_ARTIFACT_REL="$artifact_rel" \
   LOCALCI_ARTIFACT_ABS="$artifact_abs" \
   LOCALCI_COVERAGE_XML="$coverage_xml" \
   LOCALCI_CONFIG_PATH="$CONFIG_FILE" \
@@ -170,7 +167,6 @@ sign_root = Path(os.environ["LOCALCI_SIGN_ROOT"])
 timestamp = os.environ["LOCALCI_TIMESTAMP"]
 git_commit = os.environ["LOCALCI_GIT_COMMIT"]
 git_branch = os.environ["LOCALCI_GIT_BRANCH"]
-artifact_rel = os.environ.get("LOCALCI_ARTIFACT_REL") or None
 artifact_abs = os.environ.get("LOCALCI_ARTIFACT_ABS") or None
 coverage_xml = os.environ.get("LOCALCI_COVERAGE_XML") or None
 cfg_path = os.environ.get("LOCALCI_CONFIG_PATH") or ""
@@ -219,27 +215,36 @@ except Exception:
     pass
 
 artifact_checksum = None
+artifact_rel_repo = None
 if artifact_abs:
     artifact_file = Path(artifact_abs)
     if artifact_file.is_file():
-        artifact_rel = artifact_rel or artifact_file.relative_to(repo_root).as_posix()
+        try:
+            artifact_rel_repo = artifact_file.relative_to(repo_root).as_posix()
+        except ValueError:
+            artifact_rel_repo = artifact_file.as_posix()
         digest = hashlib.sha256(artifact_file.read_bytes()).hexdigest()
         artifact_checksum = f"sha256:{digest}"
     else:
-        artifact_rel = None
         artifact_abs = None
 
-if artifact_abs is None or artifact_rel is None:
+if artifact_abs is None or artifact_checksum is None or artifact_rel_repo is None:
     raise RuntimeError("local-ci artifacts zip not found; unable to produce handshake manifest.")
 
-vi_requests_rel = f"out/local-ci-ubuntu/{timestamp}/vi-comparison/vi-diff-requests.json"
 vi_requests_abs = run_root / "vi-comparison" / "vi-diff-requests.json"
+vi_requests_rel_run = vi_requests_abs.relative_to(run_root).as_posix()
+try:
+    vi_requests_rel_repo = vi_requests_abs.relative_to(repo_root).as_posix()
+except ValueError:
+    vi_requests_rel_repo = vi_requests_abs.as_posix()
 if not vi_requests_abs.is_file():
     vi_requests_abs.parent.mkdir(parents=True, exist_ok=True)
     vi_requests_abs.write_text(
         json.dumps({"schema": "icon-editor/vi-diff-requests@v1", "pairs": []}, indent=2),
         encoding="utf-8",
     )
+
+vi_requests_rel = vi_requests_rel_run
 
 stages = []
 if stage_file.exists():
@@ -296,10 +301,10 @@ manifest = {
         },
     ],
     "artifacts": {
-        "zip": artifact_rel,
+        "zip": artifact_rel_repo,
         "checksums": {
-            Path(artifact_rel or "local-ci-artifacts.zip").name: artifact_checksum or "sha256:unknown"
-        } if artifact_rel else {}
+            Path(artifact_rel_repo).name: artifact_checksum
+        },
     },
     "vi_diff_requests_file": vi_requests_rel,
     "determinism": {
@@ -308,11 +313,6 @@ manifest = {
         "case_sensitive": True,
     },
     "notes": "Local CI Ubuntu handshake run",
-    "coverage": {
-        "percent": coverage_percent,
-        "min_percent": coverage_min,
-        "report": coverage_rel,
-    } if coverage_percent is not None else None,
     "git": {
         "commit": git_commit,
         "branch": git_branch,
@@ -321,12 +321,21 @@ manifest = {
         "repo_root": repo_root.as_posix(),
         "run_root": run_root.as_posix(),
         "sign_root": sign_root.as_posix(),
-        "artifact_zip_rel": artifact_rel,
+        "artifact_zip_rel": artifact_rel_repo,
         "artifact_zip_abs": artifact_abs,
         "coverage_xml_rel": coverage_rel,
+        "vi_diff_requests_rel_repo": vi_requests_rel_repo,
+        "vi_diff_requests_rel_run_root": vi_requests_rel_run,
     },
     "stages": stages,
 }
+
+if coverage_percent is not None:
+    manifest["coverage"] = {
+        "percent": coverage_percent,
+        "min_percent": coverage_min,
+        "report": coverage_rel,
+    }
 
 manifest_path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
 print(f"[local-ci] Wrote Ubuntu manifest to {manifest_path}")
