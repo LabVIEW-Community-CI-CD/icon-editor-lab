@@ -24,6 +24,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure Ubuntu runner scripts are executable
+        run: |
+          chmod +x local-ci/ubuntu/invoke-local-ci.sh
+          chmod +x local-ci/ubuntu/stages/*.sh
+          chmod +x local-ci/ubuntu/scripts/*.sh
+          chmod +x local-ci/ubuntu/watchers/*.sh
+
       - name: Ensure PyYAML is available
         run: |
           python3 -m pip install --user --upgrade pip PyYAML
