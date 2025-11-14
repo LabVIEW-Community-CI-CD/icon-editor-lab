@@ -250,8 +250,8 @@ manifest = {
     "stages": stages
 }
 
-  manifest_path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
-  print(f"[local-ci] Wrote Ubuntu manifest to {manifest_path}")
+manifest_path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+print(f"[local-ci] Wrote Ubuntu manifest to {manifest_path}")
 PY
   rm -f "$stage_file"
 
