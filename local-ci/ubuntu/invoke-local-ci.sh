@@ -150,10 +150,13 @@ write_manifest() {
   LOCALCI_CONFIG_PATH="$CONFIG_FILE" \
   LOCALCI_DELIM="$DELIM" \
   python3 - <<'PY'
+import hashlib
 import json
 import os
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+
 try:
     import yaml  # type: ignore
 except ModuleNotFoundError:
@@ -203,6 +206,41 @@ if coverage_xml:
         coverage_percent = None
         coverage_rel = None
 
+is_dirty = False
+try:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "status", "--porcelain"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    is_dirty = bool(result.stdout.strip())
+except Exception:
+    pass
+
+artifact_checksum = None
+if artifact_abs:
+    artifact_file = Path(artifact_abs)
+    if artifact_file.is_file():
+        artifact_rel = artifact_rel or artifact_file.relative_to(repo_root).as_posix()
+        digest = hashlib.sha256(artifact_file.read_bytes()).hexdigest()
+        artifact_checksum = f"sha256:{digest}"
+    else:
+        artifact_rel = None
+        artifact_abs = None
+
+if artifact_abs is None or artifact_rel is None:
+    raise RuntimeError("local-ci artifacts zip not found; unable to produce handshake manifest.")
+
+vi_requests_rel = f"out/local-ci-ubuntu/{timestamp}/vi-comparison/vi-diff-requests.json"
+vi_requests_abs = run_root / "vi-comparison" / "vi-diff-requests.json"
+if not vi_requests_abs.is_file():
+    vi_requests_abs.parent.mkdir(parents=True, exist_ok=True)
+    vi_requests_abs.write_text(
+        json.dumps({"schema": "icon-editor/vi-diff-requests@v1", "pairs": []}, indent=2),
+        encoding="utf-8",
+    )
+
 stages = []
 if stage_file.exists():
     for raw in stage_file.read_text(encoding='utf-8').splitlines():
@@ -227,13 +265,57 @@ if stage_file.exists():
             "duration_seconds": int(duration)
         })
 
+project_repo = os.environ.get("GITHUB_REPOSITORY") or f"unknown/{repo_root.name}"
+run_id = f"{timestamp}-{git_commit[:8]}" if git_commit not in ("unknown", "") else timestamp
+
 manifest = {
-    "runner": "ubuntu",
-    "timestamp": timestamp,
-    "created_at_utc": datetime.now(timezone.utc).isoformat(),
+    "schema_version": "v1",
+    "run_id": run_id,
+    "created_utc": datetime.now(timezone.utc).isoformat(),
+    "project": {
+        "name": repo_root.name,
+        "repo": project_repo,
+        "branch": git_branch,
+        "commit": git_commit,
+        "dirty": is_dirty,
+    },
+    "tooling": {
+        "ubuntu_ci_tool_version": f"local-ci-ubuntu@{git_commit[:7]}" if git_commit not in ("unknown", "") else "local-ci-ubuntu@unknown",
+        "renderer_version": "vi-compare@local-ci",
+    },
+    "path_map": [
+        {
+            "purpose": "run_root",
+            "windows": f"C:\\\\local-ci-ubuntu\\\\{timestamp}",
+            "wsl": run_root.as_posix(),
+        },
+        {
+            "purpose": "sign_root",
+            "windows": f"C:\\\\local-ci-sign-root\\\\{timestamp}",
+            "wsl": sign_root.as_posix(),
+        },
+    ],
+    "artifacts": {
+        "zip": artifact_rel,
+        "checksums": {
+            Path(artifact_rel or "local-ci-artifacts.zip").name: artifact_checksum or "sha256:unknown"
+        } if artifact_rel else {}
+    },
+    "vi_diff_requests_file": vi_requests_rel,
+    "determinism": {
+        "sort": "lexicographic",
+        "locale": "C",
+        "case_sensitive": True,
+    },
+    "notes": "Local CI Ubuntu handshake run",
+    "coverage": {
+        "percent": coverage_percent,
+        "min_percent": coverage_min,
+        "report": coverage_rel,
+    } if coverage_percent is not None else None,
     "git": {
         "commit": git_commit,
-        "branch": git_branch
+        "branch": git_branch,
     },
     "paths": {
         "repo_root": repo_root.as_posix(),
@@ -241,13 +323,9 @@ manifest = {
         "sign_root": sign_root.as_posix(),
         "artifact_zip_rel": artifact_rel,
         "artifact_zip_abs": artifact_abs,
-        "coverage_xml_rel": coverage_rel
+        "coverage_xml_rel": coverage_rel,
     },
-    "coverage": {
-        "percent": coverage_percent,
-        "min_percent": coverage_min
-    } if coverage_percent is not None else None,
-    "stages": stages
+    "stages": stages,
 }
 
 manifest_path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
