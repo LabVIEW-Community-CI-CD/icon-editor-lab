@@ -83,11 +83,22 @@ jobs:
               'C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin',
               'C:\Program Files (x86)\Microsoft SDKs\Windows\v11.0A\bin'
             )
+            $candidates = @()
             foreach ($kitRoot in $kitRoots) {
               if (-not (Test-Path -LiteralPath $kitRoot -PathType Container)) { continue }
-              $candidate = Get-ChildItem -Path $kitRoot -Filter signtool.exe -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-              if ($candidate) {
-                $signtoolPath = $candidate.FullName
+              $candidates += Get-ChildItem -Path $kitRoot -Filter signtool.exe -File -Recurse -ErrorAction SilentlyContinue
+            }
+            if ($candidates) {
+              $ordered = $candidates | Sort-Object {
+                $path = $_.FullName.ToLowerInvariant()
+                if ($path -match '\\(x64|amd64)\\') { 0 }
+                elseif ($path -match '\\x86\\') { 1 }
+                else { 2 }
+              }
+              foreach ($candidate in $ordered) {
+                $candidatePath = $candidate.FullName
+                if ($candidatePath -match '\\arm(64)?\\') { continue }
+                $signtoolPath = $candidatePath
                 break
               }
             }
