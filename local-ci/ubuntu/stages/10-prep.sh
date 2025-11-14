@@ -10,6 +10,21 @@ echo "Run root  : $LOCALCI_RUN_ROOT"
 
 mkdir -p "$LOCALCI_SIGN_ROOT" "$LOCALCI_RUN_ROOT"
 
+missing=()
+if ! command -v pwsh >/dev/null 2>&1; then
+  missing+=("pwsh")
+fi
+if ! command -v python3 >/dev/null 2>&1; then
+  missing+=("python3")
+fi
+if ! command -v zip >/dev/null 2>&1; then
+  echo "[10-prep] zip CLI not found; packaging stage will use Python fallback." >&2
+fi
+if [[ ${#missing[@]} -gt 0 ]]; then
+  echo "[10-prep] Missing required commands: ${missing[*]}" >&2
+  exit 1
+fi
+
 preserve_dirs=(local-signing-logs local-ci local-ci-ubuntu)
 for dir in "${preserve_dirs[@]}"; do
   mkdir -p "$LOCALCI_SIGN_ROOT/$dir"
