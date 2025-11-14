@@ -41,7 +41,11 @@
     VipmVipcPath            = '.github/actions/apply-vipc/runner_dependencies.vipc'
     VipmRelativePath        = 'src'
     VipmDisplayOnly         = $false
-    EnableViCompareCli      = $true
+    # Default to CLI disabled; enable via LOCALCI_VICOMPARE_CLI_ENABLED=1 on
+    # LabVIEW-capable self-hosted runners (for example, those labeled
+    # [self-hosted, Windows, X64]) or by overriding this flag in a custom
+    # profile.
+    EnableViCompareCli      = $false
     ViCompareLabVIEWPath    = 'C:\Program Files\National Instruments\LabVIEW 2025\LabVIEW.exe'
     ViCompareHarnessPath    = 'src/tools/TestStand-CompareHarness.ps1'
     ViCompareMaxPairs       = 25

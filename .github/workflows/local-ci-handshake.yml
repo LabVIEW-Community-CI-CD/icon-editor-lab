@@ -1,3 +1,4 @@
+# actionlint: disable=runner-label
 name: Local CI Handshake
 
 on:
@@ -129,12 +130,13 @@ jobs:
 
   windows-consumer:
     needs: ubuntu-handshake
-    runs-on: [self-hosted, windows, local-ci]
+    runs-on: [self-hosted, windows]
     defaults:
       run:
         shell: pwsh
     env:
       SIGN_ROOT: out
+      LOCALCI_VICOMPARE_CLI_ENABLED: '1'
       LOCALCI_ENV_PARITY_MODE: warn
     steps:
       - name: Checkout
@@ -214,6 +216,17 @@ jobs:
           Add-Content -LiteralPath $summaryPath -Value "- Ubuntu Stamp: $stamp`n"
           if ($windowsRun) {
             Add-Content -LiteralPath $summaryPath -Value "- Windows Run Root: $windowsRun`n"
+            $importPath = Join-Path $windowsRun 'ubuntu-import.json'
+            if (Test-Path -LiteralPath $importPath -PathType Leaf) {
+              try {
+                $import = Get-Content -LiteralPath $importPath -Raw | ConvertFrom-Json
+                if ($import.HashStatus -and $import.HashStatus.verified) {
+                  Add-Content -LiteralPath $summaryPath -Value "- Ubuntu artifact hash: verified`n"
+                }
+              } catch {
+                Write-Warning "Failed to read Ubuntu import summary: $($_.Exception.Message)"
+              }
+            }
           } else {
             Add-Content -LiteralPath $summaryPath -Value "- Windows Run Root: <not produced>`n"
           }
