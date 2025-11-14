@@ -14,6 +14,43 @@
       "problemMatcher": []
     },
     {
+      "label": "Local CI: Ubuntu (handshake stages)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "local-ci/ubuntu/invoke-local-ci.sh",
+        "--skip",
+        "28-docs",
+        "--skip",
+        "30-tests"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Local CI: Ubuntu (docker runner)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "docker run --rm -v ${workspaceFolder}:/work icon-editor-lab/ubuntu-runner:local-ci localci-run-handshake --skip 28-docs --skip 30-tests"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Tests: IconEditor DevMode coverage",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/src/Invoke-PesterTests.ps1",
+        "-Tag",
+        "icon-editor"
+      ],
+      "problemMatcher": []
+    },
+    {
       "label": "Local CI: Stage 25 DevMode (enable)",
       "type": "shell",
       "command": "pwsh",

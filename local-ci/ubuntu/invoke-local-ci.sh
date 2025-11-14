@@ -105,6 +105,39 @@ timestamp="$(date +%Y%m%d-%H%M%S)"
 SIGN_ROOT_ABS="$REPO_ROOT/$SIGN_ROOT"
 RUN_ROOT="$REPO_ROOT/out/local-ci-ubuntu/$timestamp"
 mkdir -p "$SIGN_ROOT_ABS" "$RUN_ROOT"
+HEAD_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || printf 'unknown')"
+
+resolve_vi_base_commit() {
+  local candidate=""
+  local commit=""
+  if [[ -n "${LOCALCI_VI_BASE_REF:-}" ]]; then
+    candidate="${LOCALCI_VI_BASE_REF}"
+  elif [[ -n "${GITHUB_BASE_REF:-}" ]]; then
+    candidate="origin/${GITHUB_BASE_REF}"
+  else
+    candidate=""
+  fi
+  if [[ -n "$candidate" ]]; then
+    commit="$(git -C "$REPO_ROOT" rev-parse "$candidate" 2>/dev/null || true)"
+  fi
+  if [[ -z "$commit" ]]; then
+    if git -C "$REPO_ROOT" rev-parse origin/develop >/dev/null 2>&1; then
+      commit="$(git -C "$REPO_ROOT" merge-base HEAD origin/develop 2>/dev/null || true)"
+    fi
+  fi
+  if [[ -z "$commit" ]]; then
+    commit="$(git -C "$REPO_ROOT" rev-parse HEAD^ 2>/dev/null || git -C "$REPO_ROOT" rev-parse HEAD)"
+  fi
+  printf '%s\n' "$commit"
+}
+
+VI_BASE_COMMIT="$(resolve_vi_base_commit)"
+VI_CHANGED_LIST="$RUN_ROOT/vi-changed-files.txt"
+python3 "$REPO_ROOT/local-ci/ubuntu/scripts/detect_vi_changes.py" \
+  --repo "$REPO_ROOT" \
+  --base "$VI_BASE_COMMIT" \
+  --head "$HEAD_COMMIT" \
+  --output "$VI_CHANGED_LIST"
 
 record_stage() {
   local name="$1"
@@ -146,6 +179,9 @@ write_manifest() {
   LOCALCI_COVERAGE_XML="$coverage_xml" \
   LOCALCI_CONFIG_PATH="$CONFIG_FILE" \
   LOCALCI_DELIM="$DELIM" \
+  LOCALCI_VI_CHANGED_LIST_FILE="$VI_CHANGED_LIST" \
+  LOCALCI_VI_BASE_COMMIT="$VI_BASE_COMMIT" \
+  LOCALCI_VI_HEAD_COMMIT="$HEAD_COMMIT" \
   python3 - <<'PY'
 import hashlib
 import json
@@ -246,6 +282,17 @@ if not vi_requests_abs.is_file():
 
 vi_requests_rel = vi_requests_rel_run
 
+vi_changes_file = os.environ.get("LOCALCI_VI_CHANGED_LIST_FILE")
+vi_changed_files = []
+if vi_changes_file:
+    vi_path = Path(vi_changes_file)
+    if vi_path.exists():
+        for line in vi_path.read_text(encoding='utf-8').splitlines():
+            line = line.strip()
+            if line:
+                vi_changed_files.append(line)
+vi_base_commit = os.environ.get("LOCALCI_VI_BASE_COMMIT") or None
+
 stages = []
 if stage_file.exists():
     for raw in stage_file.read_text(encoding='utf-8').splitlines():
@@ -272,6 +319,8 @@ if stage_file.exists():
 
 project_repo = os.environ.get("GITHUB_REPOSITORY") or f"unknown/{repo_root.name}"
 run_id = f"{timestamp}-{git_commit[:8]}" if git_commit not in ("unknown", "") else timestamp
+vi_base_commit = os.environ.get("LOCALCI_VI_BASE_COMMIT") or None
+vi_head_commit = os.environ.get("LOCALCI_VI_HEAD_COMMIT") or None
 
 manifest = {
     "schema_version": "v1",
@@ -328,6 +377,11 @@ manifest = {
         "vi_diff_requests_rel_run_root": vi_requests_rel_run,
     },
     "stages": stages,
+    "vi_changes": {
+        "base_commit": vi_base_commit,
+        "head_commit": vi_head_commit,
+        "files": vi_changed_files,
+    },
 }
 
 if coverage_percent is not None:

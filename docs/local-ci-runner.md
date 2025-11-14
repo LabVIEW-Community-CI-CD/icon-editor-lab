@@ -55,6 +55,49 @@ Each orchestrator:
 4. **Cross-OS handshake** – ensure stage 40 packages the artifacts expected by Windows (vi-comparison payloads, publish markers) and that it records the run metadata Windows needs (package path, SHA, tag list).
 5. **Documentation & tasks** – update VS Code tasks / scripts to call the orchestrators, and document any new env vars or log locations so contributors can reproduce the pipeline.
 
+## Docker Ubuntu Runner
+
+Stage `25-docker.sh` now builds two Docker images:
+
+1. `icon-editor-lab/tools:local-ci` – the base tooling image used by CI to lint, run coverage, and validate provider/test intent.
+2. `icon-editor-lab/ubuntu-runner:local-ci` – a derived image with the `/usr/local/bin/localci-run-handshake` entrypoint.
+
+The Ubuntu runner image allows you to execute the full Ubuntu pipeline locally without depending on GitHub:
+
+```bash
+# After running Stage 25 once to build the image tags
+docker run --rm \
+  -v "$PWD:/work" \
+  icon-editor-lab/ubuntu-runner:local-ci \
+  localci-run-handshake --skip 28-docs --skip 30-tests
+```
+
+The command assumes your repository is mounted at `/work`, and any `invoke-local-ci.sh` flags (e.g., `--only 35-coverage`) can be appended. A matching VS Code task `Local CI: Ubuntu (docker runner)` is provided to simplify invocation.
+
+The Windows consumer still executes natively on the same Windows box hosting Docker Desktop, so LabVIEW/TestStand automation remains unchanged. The Docker runner simply provides a deterministic Ubuntu environment for local experimentation.
+
+### Scheduling VI Rendering After Windows Publish
+
+Both the repository and the Ubuntu runner image now include `tools/local-ci/Schedule-ViStage.ps1`. This helper inspects `vi-comparison-summary.json` (produced after the Windows job publishes results) and, when it detects any changed/new VI pairs, re-runs the Ubuntu rendering stages (`45-vi-compare` and `40-package`).
+
+Usage (native):
+
+```powershell
+pwsh -File tools/local-ci/Schedule-ViStage.ps1 -Stamp 20251114-000040 -DryRun
+pwsh -File tools/local-ci/Schedule-ViStage.ps1 -Stamp 20251114-000040
+```
+
+Usage (Docker):
+
+```bash
+docker run --rm \
+  -v "$PWD:/work" \
+  icon-editor-lab/ubuntu-runner:local-ci \
+  pwsh -File /opt/local-ci/Schedule-ViStage.ps1 -RepoRoot /work -Stamp 20251114-000040
+```
+
+Invoke this helper after the Windows consumer writes `windows/vi-compare.publish.json`. When the summary shows no changes it exits quietly; otherwise it triggers the renderer so reports stay in sync without waiting for a full Ubuntu rerun.
+
 ## Self-Hosted Windows Runner Baseline
 
 The “golden” Windows box that drives stage 25/30/37/40 must look the same as the GitHub Actions self-hosted runner we recommend to downstream forks. Keeping the hardware and software baselines in sync avoids LabVIEW drift, removes PSGallery dependence during runs, and ensures Stage 40 can reach the certificate store without interactive prompts.
@@ -299,4 +342,3 @@ When `AutoVendorIconEditor` is true and `IconEditorVendorUrl` is omitted, Stage 
 5. (Optional) Add `gh workflow run local-ci` alias or VSCode task hooking into the runner.
 
 This design keeps local validation ergonomic, matches the hardened CI paths, and creates a clear bridge from “golden box” verification to hosted GitHub Actions. Once implemented, every developer can run `local-ci/windows/Invoke-LocalCI.ps1` (or the Ubuntu variant) before pushing, ensuring identical behavior to the gated workflows.
-

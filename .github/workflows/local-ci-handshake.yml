@@ -41,6 +41,23 @@ jobs:
         run: |
           python3 -m pip install --user --upgrade pip PyYAML
 
+      - name: Configure Docker publishing
+        run: |
+          set -euo pipefail
+          repo="${GITHUB_REPOSITORY,,}"
+          echo "LOCALCI_DOCKER_REMOTE_IMAGE=ghcr.io/${repo}/tools:local-ci" >> "$GITHUB_ENV"
+          echo "LOCALCI_UBUNTU_RUNNER_REMOTE_IMAGE=ghcr.io/${repo}/ubuntu-runner:local-ci" >> "$GITHUB_ENV"
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "LOCALCI_DOCKER_PUSH_REMOTE=true" >> "$GITHUB_ENV"
+          else
+            echo "LOCALCI_DOCKER_PUSH_REMOTE=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Login to GitHub Container Registry
+        if: env.LOCALCI_DOCKER_PUSH_REMOTE == 'true'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Run Ubuntu local CI (handshake stages)
         run: |
           bash local-ci/ubuntu/invoke-local-ci.sh \
