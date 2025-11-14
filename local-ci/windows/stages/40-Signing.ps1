@@ -75,6 +75,12 @@ if (-not $skipPf) {
 
 if ($config.SimulateTimestampFailure) { $signParams['SimulateTimestampFailure'] = $true }
 
+$signtoolCmd = Get-Command signtool.exe -ErrorAction SilentlyContinue
+if (-not $signtoolCmd) {
+    Write-Warning "signtool.exe not found; skipping signing stage."
+    return
+}
+
 Write-Host "Invoking signing harness for artifacts under $signRoot"
 $signLogDir = Join-Path $signRoot 'local-signing-logs'
 $signingResult = 'Succeeded'
