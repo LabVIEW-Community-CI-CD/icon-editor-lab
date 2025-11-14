@@ -130,7 +130,7 @@ jobs:
 
   windows-consumer:
     needs: ubuntu-handshake
-    runs-on: [self-hosted, windows]
+    runs-on: [self-hosted, Windows, X64]
     defaults:
       run:
         shell: pwsh
