@@ -1,0 +1,14 @@
+# Local CI artifacts (Ubuntu handshake output, signing runs, watcher logs)
+out/
+logs-*/
+logs-*.zip
+
+# Downloaded run logs/artifacts from CI investigations
+run-*.log
+run-*.zip
+
+# Scratch helper scripts from interactive debugging
+temp*.ps1
+temp_*.ps1
+temp_head.txt
+temp_tail.txt
