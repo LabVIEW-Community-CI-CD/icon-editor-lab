@@ -104,46 +104,13 @@ jobs:
 
       - name: Write GitHub handshake pointer
         run: |
-          pointer_path="${HANDSHAKE_POINTER}"
-          mkdir -p "$(dirname "$pointer_path")"
-          python3 - <<'PY' "$pointer_path"
-            import json
-            import os
-            import sys
-            import time
-            from datetime import datetime, timezone
-
-            pointer_path = sys.argv[1]
-            stamp = os.environ.get("HANDSHAKE_STAMP", "")
-            artifact = os.environ.get("HANDSHAKE_ARTIFACT", "")
-            manifest_rel = os.environ.get("HANDSHAKE_MANIFEST_REL", "")
-            manifest_abs = os.environ.get("HANDSHAKE_MANIFEST_ABS", "")
-            pointer_file = os.environ.get("UBUNTU_POINTER_PATH", "")
-            sequence = int(time.time())
-            now = datetime.now(timezone.utc).isoformat()
-            payload = {
-                "schema": "handshake/v1",
-                "sequence": sequence,
-                "status": "ubuntu-ready",
-                "last_updated": now,
-                "ubuntu": {
-                    "stamp": stamp,
-                    "artifact": artifact,
-                    "manifest_rel": manifest_rel or None,
-                    "manifest_abs": manifest_abs or None,
-                    "pointer": pointer_file or None,
-                    "updated_at": now,
-                },
-                "windows": {
-                    "status": "pending",
-                    "updated_at": None,
-                },
-            }
-            os.makedirs(os.path.dirname(pointer_path), exist_ok=True)
-            with open(pointer_path, "w", encoding="utf-8") as handle:
-                json.dump(payload, handle, indent=2)
-                handle.write("\n")
-          PY
+          python3 scripts/workflows/update_handshake_pointer.py \
+            --pointer "${HANDSHAKE_POINTER}" \
+            --stamp "${HANDSHAKE_STAMP}" \
+            --artifact "${HANDSHAKE_ARTIFACT}" \
+            --manifest-rel "${HANDSHAKE_MANIFEST_REL}" \
+            --manifest-abs "${HANDSHAKE_MANIFEST_ABS}" \
+            --ubuntu-pointer "${UBUNTU_POINTER_PATH}"
         env:
           HANDSHAKE_POINTER: handshake/pointer.json
           HANDSHAKE_STAMP: ${{ steps.capture-meta.outputs.stamp }}
@@ -277,44 +244,11 @@ jobs:
       - name: Update GitHub handshake pointer
         if: ${{ always() }}
         run: |
-          $pointerPath = Join-Path $PWD 'handshake' 'pointer.json'
-          if (-not (Test-Path -LiteralPath $pointerPath -PathType Leaf)) {
-            Write-Warning "Handshake pointer missing at $pointerPath"
-            return
-          }
-          $raw = Get-Content -LiteralPath $pointerPath -Raw -ErrorAction Stop
-          $pointer = if ($raw) { $raw | ConvertFrom-Json } else { @{} }
-          if (-not $pointer.sequence) {
-            $pointer | Add-Member -NotePropertyName sequence -NotePropertyValue 0
-          }
-          $pointer.sequence = [int]$pointer.sequence + 1
-          $now = [DateTime]::UtcNow.ToString('o')
-          $pointer.last_updated = $now
-          if (-not $pointer.windows) {
-            $pointer | Add-Member -NotePropertyName windows -NotePropertyValue (@{})
-          }
-          $windowsRun = $env:LOCALCI_WINDOWS_RUN
-          if ([string]::IsNullOrWhiteSpace($windowsRun)) {
-            $pointer.status = 'ubuntu-ready'
-            $pointer.windows.status = 'pending'
-            $pointer.windows.run_root = $null
-            $pointer.windows.stamp = $null
-          } else {
-            $pointer.status = 'windows-ack'
-            $pointer.windows.status = 'imported'
-            $pointer.windows.run_root = $windowsRun
-            try {
-              $pointer.windows.stamp = Split-Path -Path $windowsRun -Leaf
-            } catch { $pointer.windows.stamp = $windowsRun }
-          }
-          $pointer.windows.runner = $env:COMPUTERNAME
-          $pointer.windows.updated_at = $now
-          if (-not $pointer.windows.job) {
-            $pointer.windows | Add-Member -NotePropertyName job -NotePropertyValue '' 
-          }
-          $pointer.windows.job = "${{ github.run_id }}"
-          $pointer | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $pointerPath -Encoding utf8
-
+          python3 scripts/workflows/update_handshake_pointer.py \
+            --pointer handshake/pointer.json \
+            --windows-run "$LOCALCI_WINDOWS_RUN" \
+            --windows-runner "$COMPUTERNAME" \
+            --windows-job "${{ github.run_id }}"
       - name: Upload handshake pointer (control plane, updated)
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
