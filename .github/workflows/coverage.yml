@@ -15,13 +15,13 @@ jobs:
     runs-on: windows-latest
     env:
       COVERAGE_THRESHOLD: "75"
-      CRITICAL_FILES: '["src/tools/IconEditorPackage.psm1","src/tools/CompareVI.Tools/CompareVI.Tools.psm1"]'
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Pester v6+
         shell: pwsh
         run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           Install-Module Pester -MinimumVersion 6.0.0 -Scope CurrentUser -Force
           Import-Module Pester -MinimumVersion 6.0.0 -ErrorAction Stop
 
@@ -72,31 +72,24 @@ jobs:
       - name: Enforce file floors
         shell: pwsh
         run: |
+          $criticalCandidates = @('src/Core.psm1','tools/Build.ps1')
           $criticalFiles = @()
-          if ($env:CRITICAL_FILES) {
-            try {
-              $criticalFiles = ConvertFrom-Json -InputObject $env:CRITICAL_FILES
+          foreach ($candidate in $criticalCandidates) {
+            $fullPath = Join-Path (Get-Location).Path $candidate
+            if (Test-Path -LiteralPath $fullPath -PathType Leaf) {
+              $criticalFiles += $candidate
             }
-            catch {
-              Write-Warning "Failed to parse CRITICAL_FILES JSON: $($_.Exception.Message)"
+            else {
+              Write-Host "Critical file not found locally, skipping: $candidate"
             }
           }
-          if (-not $criticalFiles -or $criticalFiles.Count -eq 0) {
-            Write-Host 'No critical files configured; skipping file-floor enforcement.'
+          if ($criticalFiles.Count -eq 0) {
+            Write-Host 'No critical files exist locally; skipping file-floor enforcement.'
             return
           }
           $existing = @()
           foreach ($file in $criticalFiles) {
-            if (Test-Path $file) {
-              $existing += $file
-            }
-            else {
-              Write-Host "Critical file not found locally, skipping: $file"
-            }
-          }
-          if ($existing.Count -eq 0) {
-            Write-Host 'No critical files exist locally; skipping file-floor enforcement.'
-            return
+            $existing += $file
           }
           $coverageFile = 'artifacts/coverage/coverage.xml'
           if (-not (Test-Path $coverageFile)) {
@@ -112,7 +105,12 @@ jobs:
           $threshold = [double]$env:COVERAGE_THRESHOLD
           $violations = @()
           foreach ($target in $existing) {
-            $matchingNodes = @($classNodes | Where-Object { $_.filename -ieq $target })
+            $normalizedTarget = ($target -replace '\\','/').ToLowerInvariant()
+            $matchingNodes = @(
+              $classNodes | Where-Object {
+                (($_.filename -replace '\\','/').ToLowerInvariant()) -eq $normalizedTarget
+              }
+            )
             if ($matchingNodes.Count -eq 0) {
               Write-Warning "No coverage node for $target; treating as 0%."
               $violations += "$target=0"

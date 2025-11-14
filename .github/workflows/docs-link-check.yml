@@ -22,8 +22,8 @@ jobs:
         uses: lycheeverse/lychee-action@v1
         with:
           args: >-
-            --no-progress --retry 2 --timeout 20s --exclude-mail
-            --format markdown --output .lychee/report.md
+            --no-progress --retry 2 --timeout 20s
+            --output .lychee/report.md --format markdown
             "**/*.md"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
