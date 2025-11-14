@@ -134,10 +134,12 @@ jobs:
                   } else {
                     Write-Warning "signtool retry without TSA failed for ${target}: $($_.Exception.Message)"
                   }
+                  $global:LASTEXITCODE = 0
                 }
               }
               if (-not $success) {
                 Write-Warning "Unable to sign ${target} on hosted runner; continuing."
+                $global:LASTEXITCODE = 0
               }
             }
           }
