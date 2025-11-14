@@ -41,7 +41,7 @@
     VipmVipcPath            = '.github/actions/apply-vipc/runner_dependencies.vipc'
     VipmRelativePath        = 'src'
     VipmDisplayOnly         = $false
-    EnableViCompareCli      = $false
+    EnableViCompareCli      = $true
     ViCompareLabVIEWPath    = 'C:\Program Files\National Instruments\LabVIEW 2025\LabVIEW.exe'
     ViCompareHarnessPath    = 'src/tools/TestStand-CompareHarness.ps1'
     ViCompareMaxPairs       = 25
