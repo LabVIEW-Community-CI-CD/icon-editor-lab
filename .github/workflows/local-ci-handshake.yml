@@ -321,3 +321,16 @@ jobs:
           name: windows-local-ci-handshake
           path: out/local-ci
           if-no-files-found: warn
+  notify-cancelled-windows:
+    if: ${{ needs.windows-consumer.result == 'cancelled' }}
+    needs:
+      - ubuntu-handshake
+      - windows-consumer
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          cat <<'MSG' >> "$GITHUB_STEP_SUMMARY"
+### Windows Consumer Blocked
+
+The \`windows-consumer\` job was cancelled (usually because a prior run was still using the Windows runner). Cancel the stuck job and rerun this workflow once the runner is free.
+MSG
