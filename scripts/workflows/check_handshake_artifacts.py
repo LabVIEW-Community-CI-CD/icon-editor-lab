@@ -8,7 +8,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Iterable, List, Sequence
 
 
 def fail(message: str) -> None:
@@ -63,6 +63,28 @@ def validate_manifest(manifest: Dict[str, Any], manifest_path: Path) -> None:
     if manifest["schema_version"] != "v1":
         fail(f"Manifest schema_version '{manifest['schema_version']}' is not v1.")
 
+    path_map = manifest.get("path_map") or []
+    if not isinstance(path_map, list) or not path_map:
+        fail("Manifest path_map must include at least one entry.")
+    for idx, entry in enumerate(path_map):
+        if not isinstance(entry, dict):
+            fail(f"Manifest path_map entry {idx} is not an object.")
+        for field in ("purpose", "windows", "wsl"):
+            value = entry.get(field)
+            if not value or not isinstance(value, str):
+                fail(f"Manifest path_map[{idx}].{field} missing or invalid.")
+        if "\\" not in entry["windows"]:
+            fail(f"path_map[{idx}].windows should be a Windows path (found {entry['windows']}).")
+        if not entry["wsl"].startswith("/"):
+            fail(f"path_map[{idx}].wsl should be a POSIX path (found {entry['wsl']}).")
+
+    determinism = manifest.get("determinism") or {}
+    if determinism:
+        if determinism.get("sort") not in ("lexicographic", "numeric"):
+            fail(f"determinism.sort must be lexicographic or numeric (found {determinism.get('sort')}).")
+        if determinism.get("locale") not in (None, "C", "en_US"):
+            fail(f"determinism.locale {determinism.get('locale')} is unexpected; expected 'C' or 'en_US'.")
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -99,6 +121,10 @@ def main() -> None:
     pointer = load_json(pointer_path)
     if pointer.get("schema") != "handshake/v1":
         fail(f"Handshake pointer schema must be handshake/v1 (found {pointer.get('schema')})")
+    if pointer.get("status") not in ("ubuntu-ready", "windows-ack"):
+        fail(f"Handshake pointer status {pointer.get('status')} not recognized.")
+    if pointer.get("ubuntu") is None:
+        fail("Handshake pointer missing ubuntu section.")
     ubuntu_info = pointer.get("ubuntu") or {}
     manifest_abs = ubuntu_info.get("manifest_abs")
     if manifest_abs:
