@@ -130,7 +130,8 @@ jobs:
 
   windows-consumer:
     needs: ubuntu-handshake
-    runs-on: [self-hosted, Windows, X64]
+    # Allow repo/org vars (LOCALCI_WINDOWS_RUNS_ON) to override label set.
+    runs-on: ${{ fromJson(vars.LOCALCI_WINDOWS_RUNS_ON || '["self-hosted","Windows","X64"]') }}
     defaults:
       run:
         shell: pwsh
@@ -138,6 +139,7 @@ jobs:
       SIGN_ROOT: out
       LOCALCI_VICOMPARE_CLI_ENABLED: '1'
       LOCALCI_ENV_PARITY_MODE: warn
+      WINDOWS_RUNNER_LABELS: ${{ vars.LOCALCI_WINDOWS_RUNS_ON || '["self-hosted","Windows","X64"]' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -216,6 +218,9 @@ jobs:
           Add-Content -LiteralPath $summaryPath -Value "- Ubuntu Stamp: $stamp`n"
           if ($windowsRun) {
             Add-Content -LiteralPath $summaryPath -Value "- Windows Run Root: $windowsRun`n"
+            if ($env:WINDOWS_RUNNER_LABELS) {
+              Add-Content -LiteralPath $summaryPath -Value "- Runner labels: $($env:WINDOWS_RUNNER_LABELS)`n"
+            }
             $importPath = Join-Path $windowsRun 'ubuntu-import.json'
             if (Test-Path -LiteralPath $importPath -PathType Leaf) {
               try {
@@ -229,6 +234,9 @@ jobs:
             }
           } else {
             Add-Content -LiteralPath $summaryPath -Value "- Windows Run Root: <not produced>`n"
+            if ($env:WINDOWS_RUNNER_LABELS) {
+              Add-Content -LiteralPath $summaryPath -Value "- Runner labels: $($env:WINDOWS_RUNNER_LABELS)`n"
+            }
           }
 
       - name: Update GitHub handshake pointer
