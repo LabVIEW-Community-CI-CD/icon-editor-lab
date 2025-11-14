@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence
 
@@ -35,6 +36,13 @@ def resolve_repo_path(repo_root: Path, candidate: str | None) -> Path | None:
     return candidate_path
 
 
+def ensure_file(path: Path, description: str) -> None:
+    if not path.is_file():
+        fail(f"{description} not found at {path}")
+    if path.stat().st_size == 0:
+        fail(f"{description} at {path} is empty.")
+
+
 def validate_manifest(manifest: Dict[str, Any], manifest_path: Path) -> None:
     required_top = [
         "schema_version",
@@ -55,6 +63,12 @@ def validate_manifest(manifest: Dict[str, Any], manifest_path: Path) -> None:
     repo_value = project["repo"]
     if "/" not in repo_value:
         fail(f"Manifest project.repo '{repo_value}' is not owner/name format.")
+    created = manifest["created_utc"]
+    try:
+        datetime.fromisoformat(created.replace("Z", "+00:00"))
+    except ValueError as exc:
+        fail(f"Manifest created_utc '{created}' is not ISO-8601: {exc}")
+
     tooling = manifest["tooling"]
     for field in ("ubuntu_ci_tool_version", "renderer_version"):
         value = tooling.get(field)
@@ -81,9 +95,17 @@ def validate_manifest(manifest: Dict[str, Any], manifest_path: Path) -> None:
     determinism = manifest.get("determinism") or {}
     if determinism:
         if determinism.get("sort") not in ("lexicographic", "numeric"):
-            fail(f"determinism.sort must be lexicographic or numeric (found {determinism.get('sort')}).")
+            fail(
+                f"determinism.sort must be lexicographic or numeric (found {determinism.get('sort')})."
+            )
         if determinism.get("locale") not in (None, "C", "en_US"):
-            fail(f"determinism.locale {determinism.get('locale')} is unexpected; expected 'C' or 'en_US'.")
+            fail(
+                f"determinism.locale {determinism.get('locale')} is unexpected; expected 'C' or 'en_US'."
+            )
+        if "case_sensitive" in determinism and not isinstance(
+            determinism["case_sensitive"], bool
+        ):
+            fail("determinism.case_sensitive must be a boolean when provided.")
 
 
 def main() -> None:
@@ -93,6 +115,12 @@ def main() -> None:
     parser.add_argument("--repo-root", default=".", help="Repository root (for relative paths)")
     parser.add_argument("--stamp", help="Expected Ubuntu stamp")
     parser.add_argument("--artifact-dir", help="Expected artifact directory containing manifest")
+    parser.add_argument("--github-repository", help="Expected project.repo owner/name")
+    parser.add_argument(
+        "--expect-windows-status",
+        default="pending",
+        help="Expected handshake pointer windows.status value before Windows job runs",
+    )
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -111,12 +139,39 @@ def main() -> None:
             )
     manifest = load_json(manifest_path)
     validate_manifest(manifest, manifest_path)
+    project_repo = manifest["project"].get("repo")
+    if args.github_repository and project_repo != args.github_repository:
+        fail(
+            f"Manifest project.repo '{project_repo}' does not match expected '{args.github_repository}'."
+        )
+
+    artifacts = manifest.get("artifacts") or {}
+    artifact_zip = artifacts.get("zip")
+    if not artifact_zip:
+        fail("Manifest artifacts.zip is missing.")
+    artifact_zip_path = Path(artifact_zip)
+    if not artifact_zip_path.is_absolute():
+        artifact_zip_path = (repo_root / artifact_zip_path).resolve()
+    ensure_file(artifact_zip_path, "Artifacts ZIP")
+    checksums = artifacts.get("checksums") or {}
+    if not isinstance(checksums, dict) or not checksums:
+        fail("Manifest artifacts.checksums must include at least one entry.")
+    if Path(artifact_zip).name not in checksums:
+        fail(
+            f"Manifest checksums missing entry for {Path(artifact_zip).name}; found {list(checksums.keys())}"
+        )
+    for filename, checksum in checksums.items():
+        if not isinstance(checksum, str) or ":" not in checksum:
+            fail(f"Checksum entry for {filename} must be an algorithm:value string.")
+        checksum_path = manifest_dir / filename
+        if checksum_path.exists():
+            ensure_file(checksum_path, f"Checksum target {filename}")
+
     vi_diff_requests = manifest["vi_diff_requests_file"]
     vi_diff_path = Path(vi_diff_requests)
     if not vi_diff_path.is_absolute():
         vi_diff_path = (manifest_dir / vi_diff_path).resolve()
-    if not vi_diff_path.is_file():
-        fail(f"vi_diff_requests_file '{vi_diff_requests}' not found relative to manifest.")
+    ensure_file(vi_diff_path, "vi_diff_requests_file")
 
     pointer = load_json(pointer_path)
     if pointer.get("schema") != "handshake/v1":
@@ -125,6 +180,25 @@ def main() -> None:
         fail(f"Handshake pointer status {pointer.get('status')} not recognized.")
     if pointer.get("ubuntu") is None:
         fail("Handshake pointer missing ubuntu section.")
+    windows_block = pointer.get("windows")
+    if windows_block is None:
+        fail("Handshake pointer missing windows section.")
+    expected_windows = args.expect_windows_status
+    if expected_windows and windows_block.get("status") != expected_windows:
+        fail(
+            f"Handshake pointer windows.status {windows_block.get('status')} "
+            f"does not match expected {expected_windows}"
+        )
+    if expected_windows == "pending":
+        if windows_block.get("run_root"):
+            fail("Handshake pointer windows.run_root should be null before Windows job.")
+    else:
+        if not windows_block.get("run_root"):
+            fail("Handshake pointer windows.run_root missing when status is not pending.")
+    if pointer.get("sequence") is None or not isinstance(pointer["sequence"], int):
+        fail("Handshake pointer sequence missing or not an integer.")
+    if not pointer.get("last_updated"):
+        fail("Handshake pointer missing last_updated timestamp.")
     ubuntu_info = pointer.get("ubuntu") or {}
     manifest_abs = ubuntu_info.get("manifest_abs")
     if manifest_abs:

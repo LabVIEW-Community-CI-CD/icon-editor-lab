@@ -108,7 +108,9 @@ jobs:
             --pointer handshake/pointer.json \
             --repo-root "$PWD" \
             --stamp "${{ steps.capture-meta.outputs.stamp }}" \
-            --artifact-dir "out/local-ci-ubuntu/${{ steps.capture-meta.outputs.stamp }}"
+            --artifact-dir "out/local-ci-ubuntu/${{ steps.capture-meta.outputs.stamp }}" \
+            --github-repository "${{ github.repository }}" \
+            --expect-windows-status pending
 
       - name: Upload handshake pointer (control plane)
         if: ${{ always() }}
