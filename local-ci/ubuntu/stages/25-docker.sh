@@ -35,6 +35,26 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
+required_sources=(
+  "$LOCALCI_REPO_ROOT/Directory.Build.props"
+  "$LOCALCI_REPO_ROOT/src/CompareVi.Shared/CompareVi.Shared.csproj"
+  "$LOCALCI_REPO_ROOT/src/CompareVi.Tools.Cli/CompareVi.Tools.Cli.csproj"
+)
+missing_sources=()
+for src_path in "${required_sources[@]}"; do
+  if [[ ! -f "$src_path" ]]; then
+    missing_sources+=("$src_path")
+  fi
+done
+if [[ ${#missing_sources[@]} -gt 0 ]]; then
+  echo "[25-docker] Required source files are unavailable; skipping Docker build."
+  for missing in "${missing_sources[@]}"; do
+    echo "  - missing: $missing"
+  done
+  echo "[25-docker] Provide CompareVi projects before enabling this stage."
+  exit 0
+fi
+
 preflight_ok=true
 if [[ "$SKIP_PREFLIGHT" != "true" ]]; then
   if command -v curl >/dev/null 2>&1; then
