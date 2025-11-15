@@ -320,11 +320,18 @@ jobs:
         if: ${{ always() }}
         shell: pwsh
         run: |
+          $runnerName = $env:COMPUTERNAME
+          if (-not $runnerName) {
+            $runnerName = $env:HOSTNAME
+          }
+          if (-not $runnerName) {
+            $runnerName = '<unknown>'
+          }
           $args = @(
             'scripts/workflows/update_handshake_pointer.py',
             '--pointer', 'handshake/pointer.json',
             '--windows-run', $env:LOCALCI_WINDOWS_RUN,
-            '--windows-runner', $env:COMPUTERNAME,
+            '--windows-runner', $runnerName,
             '--windows-job', '${{ github.run_id }}'
           )
           python3 @args
