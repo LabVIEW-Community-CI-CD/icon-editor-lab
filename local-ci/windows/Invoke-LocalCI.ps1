@@ -457,4 +457,5 @@ if ($stageResults | Where-Object { $_.Status -eq 'Failed' }) {
     throw "Local CI failed. See $runMetaPath for details."
 } else {
     Write-Host "Local CI completed successfully. Metadata: $runMetaPath" -ForegroundColor Green
+    $global:LASTEXITCODE = 0
 }
