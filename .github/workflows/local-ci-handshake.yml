@@ -104,7 +104,7 @@ jobs:
 
       - name: Upload Ubuntu coverage
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ubuntu-coverage
           path: out/coverage/coverage.xml
@@ -154,7 +154,7 @@ jobs:
 
       - name: Upload handshake pointer (control plane)
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: handshake-pointer-${{ steps.capture-meta.outputs.stamp }}
           path: handshake/pointer.json
@@ -175,7 +175,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Ubuntu handshake artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.capture-meta.outputs.artifact_name }}
           if-no-files-found: error
@@ -337,7 +337,7 @@ jobs:
           python3 @args
       - name: Upload handshake pointer (control plane, updated)
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: handshake-pointer-${{ needs.ubuntu-handshake.outputs.stamp }}
           path: handshake/pointer.json
@@ -346,7 +346,7 @@ jobs:
 
       - name: Upload Windows handshake artifacts
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: windows-local-ci-handshake
           path: out/local-ci
