@@ -34,14 +34,17 @@ $preCommitContent = @'
 #!/usr/bin/env bash
 set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
-pwsh -NoLogo -NoProfile -File "$repo_root/tools/git-hooks/Invoke-PreCommitChecks.ps1"
+pwsh -NoLogo -NoProfile -File "$repo_root/tools/git-hooks/Invoke-RepoHook.ps1" -HookName pre-commit
 '@
 
 $prePushContent = @'
 #!/usr/bin/env bash
 set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
-pwsh -NoLogo -NoProfile -File "$repo_root/tools/git-hooks/Invoke-PrePushChecks.ps1"
+if command -v git-lfs >/dev/null 2>&1; then
+  git lfs pre-push "$@"
+fi
+pwsh -NoLogo -NoProfile -File "$repo_root/tools/git-hooks/Invoke-RepoHook.ps1" -HookName pre-push
 '@
 
 Set-Content -LiteralPath $preCommitPath -Value $preCommitContent -Encoding UTF8
@@ -60,7 +63,7 @@ Write-Host "  pre-commit -> $preCommitPath"
 Write-Host "  pre-push   -> $prePushPath"
 Write-Host ""
 Write-Host "Pre-commit: enforces workspace path policy for PowerShell scripts."
-Write-Host "Pre-push  : runs Invoke-Pester -Path tests -CI before pushing."
+Write-Host "Pre-push  : runs Invoke-Pester -Path tests -CI and, when ICONEDITORLAB_VICOMPARISON_HOOK=1, triggers the VI comparison hook."
 Write-Host ""
 Write-Host "To temporarily skip locally, set ICONEDITORLAB_SKIP_PRECOMMIT=1 or ICONEDITORLAB_SKIP_PREPUSH=1."
 *** Update File: README.md
