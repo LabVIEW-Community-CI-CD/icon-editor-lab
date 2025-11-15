@@ -5,13 +5,14 @@ namespace XCli.Cli;
 
 public record CliParseResult(bool ShowHelp, bool ShowVersion, string? Subcommand, string[] PayloadArgs);
 
-public static class Cli
-{
-    public static readonly HashSet<string> Subcommands = new()
-    {
-        "clearlvcache",
-        "vipc",
-        "lvbuildspec",
+             public static class Cli
+             {
+                 public static readonly HashSet<string> Subcommands = new()
+                 {
+                     "clearlvcache",
+                     "localci-handshake",
+                     "vipc",
+                     "lvbuildspec",
         "vitester",
         "lunit",
         "vipb",

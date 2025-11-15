@@ -9,6 +9,7 @@ using XCli.Security;
 using XCli.Util;
 using XCli.Echo;
 using XCli.Reverse;
+using XCli.Localci;
 using XCli.Upper;
 using XCli.Telemetry;
 using XCli.Foo;
@@ -107,6 +108,12 @@ public static class Program
         {
             var code = TelemetryCommand.Run(parsed.PayloadArgs);
             return code;
+        }
+        if (subcommand == "localci-handshake")
+        {
+            var hsResult = LocalciHandshakeCommand.Run(parsed.PayloadArgs);
+            logger.Log(subcommand, parsed.PayloadArgs, string.Empty, hsResult, sw.ElapsedMilliseconds);
+            return hsResult.ExitCode;
         }
         if (subcommand == "labview-devmode-enable" || subcommand == "labview-devmode-disable")
         {
