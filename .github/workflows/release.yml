@@ -21,7 +21,7 @@ jobs:
         src/tools/ConsoleWatch.psm1,
         src/tools/Vipm.psm1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Pester v6 (fallback to latest stable)
         shell: pwsh
