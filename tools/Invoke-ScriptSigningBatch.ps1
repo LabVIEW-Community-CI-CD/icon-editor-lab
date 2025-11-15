@@ -41,12 +41,14 @@ param(
   [Parameter(Mandatory)][string]$Root,
   [Parameter(Mandatory)][string]$CertificateThumbprint,
   [int]$MaxFiles = 500,
-  [int]$TimeoutSeconds = 20,
-  [switch]$UseTimestamp,
-  [string]$TimestampServer = 'https://timestamp.digicert.com',
-  [string]$Mode = 'fork',
-  [string]$SummaryPath,
-  [switch]$SimulateTimestampFailure
+[int]$PerFileTimeoutSeconds = 20,
+[switch]$UseTimestamp,
+[string]$TimestampServer = 'https://timestamp.digicert.com',
+[string]$Mode = 'fork',
+[string]$SummaryPath,
+[switch]$SimulateTimestampFailure,
+[switch]$SkipAlreadySigned,
+[int]$VerboseEvery = 25
 )
 
 Set-StrictMode -Version Latest
@@ -59,8 +61,28 @@ if (-not $allScripts) {
   return
 }
 
-$files = $allScripts | Select-Object -First $MaxFiles
-$capHit = ($files.Count -lt $allScripts.Count)
+$selected = $allScripts | Select-Object -First $MaxFiles
+$capHit = ($selected.Count -lt $allScripts.Count)
+$files = @()
+$skippedExisting = 0
+foreach ($candidate in $selected) {
+  if ($SkipAlreadySigned) {
+    try {
+      $sig = Get-AuthenticodeSignature -FilePath $candidate.FullName -ErrorAction Stop
+      if ($sig.Status -eq 'Valid' -and $sig.SignerCertificate -and $sig.SignerCertificate.Thumbprint -eq $cert.Thumbprint) {
+        $skippedExisting++
+        continue
+      }
+    } catch {
+      # fall through and attempt signing
+    }
+  }
+  $files += $candidate
+}
+if ($files.Count -eq 0) {
+  Write-Host ("[$Mode] All scripts already signed with thumbprint {0}; nothing to do." -f $cert.Thumbprint)
+  return
+}
 if ($capHit) {
   Write-Warning ("[$Mode] Script list truncated to {0} of {1}. Increase MAX_SIGN_FILES to cover all files." -f $files.Count,$allScripts.Count)
 }
@@ -128,13 +150,19 @@ $successMs = 0
 $fail = 0
 $index = 0
 $totalWatch = [System.Diagnostics.Stopwatch]::StartNew()
+$activityName = "Signing scripts ($Mode)"
 
 foreach ($file in $files) {
   $index++
   Write-Host ("[$Mode] [{0}/{1}] Signing {2}" -f $index,$files.Count,$file.FullName)
+  $progressPct = [math]::Round(($index / $files.Count) * 100,2)
+  Write-Progress -Activity $activityName -Status ("{0}/{1}" -f $index,$files.Count) -PercentComplete $progressPct
+  if ($VerboseEvery -gt 0 -and ($index % $VerboseEvery -eq 0)) {
+    Write-Host ("[$Mode] Progress: {0}/{1} (~{2}%) completed." -f $index,$files.Count,$progressPct)
+  }
   if ($UseTimestamp) {
     $tsa = if ([string]::IsNullOrWhiteSpace($TimestampServer)) { 'https://timestamp.digicert.com' } else { $TimestampServer }
-    $primary = Invoke-SignWithTimestamp -Path $file.FullName -Thumb $CertificateThumbprint -TimestampUrl $tsa -TimeoutSec $TimeoutSeconds -SimulateFailure:$SimulateTimestampFailure
+    $primary = Invoke-SignWithTimestamp -Path $file.FullName -Thumb $CertificateThumbprint -TimestampUrl $tsa -TimeoutSec $PerFileTimeoutSeconds -SimulateFailure:$SimulateTimestampFailure
     switch ($primary.status) {
       'ok'      { Write-Host ("  ✓ ok ({0} ms)" -f $primary.ms); $successMs += $primary.ms }
       'timeout' {
@@ -179,10 +207,12 @@ $totalWatch.Stop()
 $completed = $files.Count - $fail
 $avgMs = if ($completed -gt 0) { [math]::Round(($successMs / $completed),2) } else { 0 }
 $summary = if ($UseTimestamp) {
-  "[$Mode] Trusted signing: $completed/$($files.Count) scripts in $([math]::Round($totalWatch.Elapsed.TotalSeconds,2))s (avg ${avgMs} ms, timeouts=$timeoutUsed, fallbacks=$fallbackUsed, cap=$MaxFiles)."
+  "[$Mode] Trusted signing: $completed/$($files.Count) scripts in $([math]::Round($totalWatch.Elapsed.TotalSeconds,2))s (avg ${avgMs} ms, timeouts=$timeoutUsed, fallbacks=$fallbackUsed, skipped=$skippedExisting, cap=$MaxFiles)."
 } else {
-  "[$Mode] Fork signing: $completed/$($files.Count) scripts in $([math]::Round($totalWatch.Elapsed.TotalSeconds,2))s (avg ${avgMs} ms, timeouts=$timeoutUsed, cap=$MaxFiles)."
+  "[$Mode] Fork signing: $completed/$($files.Count) scripts in $([math]::Round($totalWatch.Elapsed.TotalSeconds,2))s (avg ${avgMs} ms, timeouts=$timeoutUsed, skipped=$skippedExisting, cap=$MaxFiles)."
 }
+$activityName = "Signing scripts ($Mode)"
+Write-Progress -Activity $activityName -Completed
 
 Write-Host $summary
 if ($SummaryPath) {

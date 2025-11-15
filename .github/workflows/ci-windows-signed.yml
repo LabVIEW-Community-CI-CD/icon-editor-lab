@@ -250,8 +250,10 @@ jobs:
             -Root 'unsigned' `
             -CertificateThumbprint $thumb `
             -MaxFiles ([int]$env:MAX_SIGN_FILES) `
-            -TimeoutSeconds ([int]$env:TS_TIMEOUT_SEC) `
+            -PerFileTimeoutSeconds ([int]$env:TS_TIMEOUT_SEC) `
             -Mode 'fork' `
+            -SkipAlreadySigned `
+            -VerboseEvery 25 `
             -SummaryPath $env:GITHUB_STEP_SUMMARY
 
       - name: Sign scripts (Authenticode) - upstream (timestamp + timeout + fallback)
