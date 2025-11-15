@@ -163,6 +163,10 @@ jobs:
   windows-consumer:
     name: Validate Windows runner coverage
     needs: ubuntu-handshake
+    outputs:
+      windows_run: ${{ steps.collect-windows-run.outputs.windows_run }}
+      windows_runner: ${{ steps.collect-windows-run.outputs.windows_runner }}
+      windows_labels: ${{ steps.collect-windows-run.outputs.windows_labels }}
     runs-on: ubuntu-latest
     concurrency:
       group: windows-consumer-${{ github.ref }}
@@ -249,6 +253,7 @@ jobs:
           ./local-ci/windows/Invoke-LocalCI.ps1 -OnlyStages 10,37
 
       - name: Collect Windows handshake logs
+        id: collect-windows-run
         if: ${{ always() }}
         run: |
           $runRoot = $null
@@ -257,7 +262,21 @@ jobs:
             $runRoot = Get-ChildItem -Path $base -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1
             if ($runRoot) {
               "LOCALCI_WINDOWS_RUN=$($runRoot.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+              "windows_run=$($runRoot.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             }
+          }
+          if (-not $runRoot) {
+            "windows_run=" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          }
+          $runnerName = $env:RUNNER_NAME
+          if (-not $runnerName) {
+            $runnerName = $env:COMPUTERNAME
+          }
+          if ($runnerName) {
+            "windows_runner=$runnerName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          }
+          if ($env:WINDOWS_RUNNER_LABELS) {
+            "windows_labels=$($env:WINDOWS_RUNNER_LABELS)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           }
 
       - name: Append Windows handshake summary
@@ -292,23 +311,6 @@ jobs:
             }
           }
 
-      - name: Update GitHub handshake pointer
-        if: ${{ always() }}
-        run: |
-          python3 scripts/workflows/update_handshake_pointer.py \
-            --pointer handshake/pointer.json \
-            --windows-run "$LOCALCI_WINDOWS_RUN" \
-            --windows-runner "$COMPUTERNAME" \
-            --windows-job "${{ github.run_id }}"
-      - name: Upload handshake pointer (control plane, updated)
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: handshake-pointer-${{ needs.ubuntu-handshake.outputs.stamp }}
-          path: handshake/pointer.json
-          overwrite: true
-          if-no-files-found: warn
-
       - name: Upload Windows handshake artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -316,6 +318,68 @@ jobs:
           name: windows-local-ci-handshake
           path: out/local-ci
           if-no-files-found: warn
+  finalize-handshake:
+    name: Finalize handshake pointer
+    needs:
+      - ubuntu-handshake
+      - windows-consumer
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workflow helpers
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/workflows
+          sparse-checkout-cone-mode: true
+
+      - name: Download handshake pointer artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: handshake-pointer-${{ needs.ubuntu-handshake.outputs.stamp }}
+          path: handshake
+
+      - name: Apply Windows metadata
+        env:
+          WINDOWS_RUN: ${{ needs.windows-consumer.outputs.windows_run }}
+          WINDOWS_RUNNER: ${{ needs.windows-consumer.outputs.windows_runner }}
+        run: |
+          if [[ ! -f "handshake/pointer.json" ]]; then
+            echo "::error ::handshake/pointer.json not found in pointer artifact"
+            exit 1
+          fi
+          python3 scripts/workflows/update_handshake_pointer.py \
+            --pointer handshake/pointer.json \
+            --windows-run "$WINDOWS_RUN" \
+            --windows-runner "$WINDOWS_RUNNER" \
+            --windows-job "${{ github.run_id }}"
+
+      - name: Upload handshake pointer (finalized)
+        uses: actions/upload-artifact@v4
+        with:
+          name: handshake-pointer-${{ needs.ubuntu-handshake.outputs.stamp }}
+          path: handshake/pointer.json
+          overwrite: true
+          if-no-files-found: error
+
+      - name: Append handshake status summary
+        run: |
+          summary="$GITHUB_STEP_SUMMARY"
+          if [[ -z "$summary" ]]; then
+            exit 0
+          fi
+          windows_run='${{ needs.windows-consumer.outputs.windows_run }}'
+          windows_runner='${{ needs.windows-consumer.outputs.windows_runner }}'
+          windows_result='${{ needs.windows-consumer.result }}'
+          {
+            echo "### Handshake Status"
+            echo ""
+            echo "- Ubuntu stamp: ${{ needs.ubuntu-handshake.outputs.stamp }}"
+            echo "- Windows result: ${windows_result}"
+            echo "- Windows run root: ${windows_run:-<not reported>}"
+            echo "- Windows runner: ${windows_runner:-<unknown>}"
+          } >> "$summary"
+
   notify-cancelled-windows:
     if: ${{ needs.windows-consumer.result == 'cancelled' }}
     needs:
@@ -325,7 +389,7 @@ jobs:
     steps:
       - run: |
           cat <<'MSG' >> "$GITHUB_STEP_SUMMARY"
-### Windows Consumer Blocked
+          ### Windows Consumer Blocked
 
-The \`windows-consumer\` job was cancelled (usually because a prior run was still using the Windows runner). Cancel the stuck job and rerun this workflow once the runner is free.
-MSG
+          The `windows-consumer` job was cancelled (usually because a prior run was still using the Windows runner). Cancel the stuck job and rerun this workflow once the runner is free.
+          MSG
