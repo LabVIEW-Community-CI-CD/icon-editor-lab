@@ -2,6 +2,10 @@ name: ci-windows-signed
 
 on:
   workflow_dispatch:
+    inputs:
+      reason:
+        description: Optional note for manual dispatch
+        required: false
   pull_request:
   push:
     branches: [develop]
