@@ -68,6 +68,9 @@ if (-not $stageInfo.statuses.validated -or $stageInfo.statuses.validated.status 
 if (-not $stageInfo.statuses.qaPromoted -or $stageInfo.statuses.qaPromoted.status -ne 'passed') {
     throw '[xcli] Cannot upload: QA gate not satisfied.'
 }
+if ($stageInfo.statuses.uploaded -and $stageInfo.statuses.uploaded.status -eq 'passed') {
+    throw '[xcli] Stage already uploaded; re-stage before attempting another upload.'
+}
 
 $runnerProfile = $stageInfo.statuses.validated.runnerProfile
 function Test-RunnerProfileHasRealTools {

@@ -215,3 +215,43 @@ jobs:
         with:
           name: coverage-xml
           path: artifacts/coverage/coverage.xml
+
+  publish-plan:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build x-cli
+        shell: pwsh
+        run: |
+          dotnet publish tools/x-cli-develop/src/XCli/XCli.csproj -c Release -o out/xcli
+
+      - name: Package x-cli
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          Compress-Archive -Path out/xcli/* -DestinationPath artifacts/xcli-win-x64.zip -Force
+          Get-Item artifacts/xcli-win-x64.zip | Select-Object FullName, Length
+
+      - name: Run publish-plan scenarios
+        shell: pwsh
+        env:
+          XCLI_STAGE_CHANNEL: 'ci'
+          XCLI_QA_DESTINATION: '.tmp-tests/xcli-qa'
+        run: |
+          $scenarios = @(
+            'matrix-emulated',
+            'matrix-full',
+            'release-lock-fail',
+            'override-success',
+            'qa-only'
+          )
+          foreach ($scenario in $scenarios) {
+            Write-Host "=== Running scenario: $scenario ==="
+            pwsh -NoLogo -NoProfile -File tools/Invoke-XCliTestPlanScenario.ps1 `
+              -RepoRoot "${{ github.workspace }}" `
+              -Scenario $scenario `
+              -StageChannel 'ci' `
+              -QaDestination '.tmp-tests/xcli-qa' `
+              -ReleaseTagOverride 'ci-override'
+          }
