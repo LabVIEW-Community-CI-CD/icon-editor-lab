@@ -44,6 +44,14 @@ function Get-RunnerProfileSafe {
     }
 }
 
+function Test-RunnerProfileHasRealTools {
+    param([object]$RunnerProfile)
+    if (-not $RunnerProfile) { return $false }
+    $labels = $RunnerProfile.labels
+    if (-not $labels) { return $false }
+    return (@($labels) -contains 'real-tools')
+}
+
 function Resolve-StagedArtifact {
     param(
         [string]$RepoRoot,
@@ -122,6 +130,12 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ("[[xcli]] Binary version: {0}" -f $versionOutput)
 
 $runnerProfile = Get-RunnerProfileSafe -Root $RepoRoot
+$hasRealTools = Test-RunnerProfileHasRealTools -RunnerProfile $runnerProfile
+if (-not $hasRealTools) {
+    Write-Warning "[[xcli]] RunnerProfile does not advertise 'real-tools'; telemetry/real-tool gates are not enforced in this run."
+} else {
+    Write-Host ("[[xcli]] RunnerProfile '{0}' has 'real-tools' capability." -f ($runnerProfile.name ?? '<unknown>'))
+}
 
 $stageDir = Split-Path -Parent $stageFullPath
 $stageInfoPath = Join-Path $stageDir 'stage-info.json'

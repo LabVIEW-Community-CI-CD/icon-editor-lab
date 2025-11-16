@@ -69,12 +69,26 @@ if (-not $stageInfo.statuses.qaPromoted -or $stageInfo.statuses.qaPromoted.statu
     throw '[xcli] Cannot upload: QA gate not satisfied.'
 }
 
+$runnerProfile = $stageInfo.statuses.validated.runnerProfile
+function Test-RunnerProfileHasRealTools {
+    param([object]$RunnerProfile)
+    if (-not $RunnerProfile) { return $false }
+    $labels = $RunnerProfile.labels
+    if (-not $labels) { return $false }
+    return (@($labels) -contains 'real-tools')
+}
+
+$hasRealTools = Test-RunnerProfileHasRealTools -RunnerProfile $runnerProfile
+
 switch ($Mode) {
     'github' {
         if (-not $ReleaseRepo) {
             throw 'ReleaseRepo is required for GitHub upload mode.'
         }
         $tag = if ($ReleaseTag) { $ReleaseTag } else { Split-Path -Leaf $stageDir }
+        if (-not $hasRealTools) {
+            Write-Warning ("[[xcli]] RunnerProfile lacks 'real-tools'; GitHub upload is proceeding but does not satisfy the real-tools gate (tag: {0})." -f $tag)
+        }
         Write-Host ("[[xcli]] (dry-run) Uploading {0} to {1}/{2} via gh (not implemented in local helper)." -f $stageFullPath, $ReleaseRepo, $tag)
         $uploadDetails = [ordered]@{
             status     = 'passed'
