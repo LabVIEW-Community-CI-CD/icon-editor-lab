@@ -1,0 +1,22 @@
+{
+  "schema": "handshake/v1",
+  "sequence": 1763230082,
+  "status": "windows-ack",
+  "last_updated": "2025-11-15T18:08:26.139084+00:00",
+  "ubuntu": {
+    "stamp": "20251115-180740",
+    "artifact": "ubuntu-local-ci-20251115-180740",
+    "manifest_rel": "out/local-ci-ubuntu/20251115-180740/ubuntu-run.json",
+    "manifest_abs": "/home/runner/work/icon-editor-lab/icon-editor-lab/out/local-ci-ubuntu/20251115-180740/ubuntu-run.json",
+    "pointer": "out/local-ci-ubuntu/latest.json",
+    "updated_at": "2025-11-15T18:08:00.290848+00:00"
+  },
+  "windows": {
+    "status": "imported",
+    "updated_at": "2025-11-15T18:08:26.139084+00:00",
+    "run_root": "/home/runner/work/icon-editor-lab/icon-editor-lab/out/local-ci/20251115-180822",
+    "stamp": "20251115-180822",
+    "runner": "<unknown>",
+    "job": "19393593999"
+  }
+}

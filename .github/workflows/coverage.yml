@@ -16,11 +16,20 @@ jobs:
     permissions:
       contents: read
     env:
-      COVERAGE_MIN: "75"
+      COVERAGE_MIN: "85"
+      FILE_FLOOR: "85"
       COVERAGE_ENFORCE: "true"
       CRITICAL_PATHS: >-
         src/Core.psm1,
-        tools/Build.ps1
+        tools/Build.ps1,
+        src/tools/Check-DocsLinks.ps1,
+        src/tools/Check-WorkflowDrift.ps1,
+        src/tools/Agent-Wait.ps1,
+        local-ci/windows/scripts/Invoke-ViCompareLabVIEWCli.ps1,
+        tools/Validate-Paths.psm1,
+        tools/Validate-Config.ps1,
+        tools/Hash-Artifacts.ps1,
+        tools/Export-SemverBundle.ps1
     steps:
       - uses: actions/checkout@v4
 
@@ -91,6 +100,9 @@ jobs:
             'tests/smoke',
             'tests/sample.tests.ps1',
             'tests/Sanity.Tests.ps1',
+            'tests/Scripts/DocsLinks.Coverage.Tests.ps1',
+            'tests/Scripts/WorkflowDrift.Tests.ps1',
+            'tests/Scripts/ViCompareCli.Tests.ps1',
             'src/tests/tools/ConsoleUx.Unit.Tests.ps1',
             'src/tests/tools/LabVIEWCli.Utility.Tests.ps1',
             'src/tests/tools/LabVIEWPidTracker.Unit.Tests.ps1',
@@ -125,7 +137,11 @@ jobs:
           $config.CodeCoverage.Enabled = $true
           $config.CodeCoverage.OutputFormat = 'Cobertura'
           $config.CodeCoverage.OutputPath  = 'artifacts/coverage/coverage.xml'
-          $coverageTargets = @(
+          $criticalCoverageTargets = @()
+          if ($env:CRITICAL_PATHS) {
+            $criticalCoverageTargets = $env:CRITICAL_PATHS -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+          }
+          $defaultCoverageTargets = @(
             'src/tools/ConsoleUx.psm1',
             'src/tools/LabVIEWCli.psm1',
             'src/tools/LabVIEWPidTracker.psm1',
@@ -137,7 +153,18 @@ jobs:
             'src/tools/GCli.psm1',
             'src/tools/LabVIEWLabVIEWCLI.psm1',
             'src/tools/Get-PesterVersion.ps1'
-          ) | Where-Object { Test-Path $_ }
+          )
+          $coverageTargetCandidates = if ($criticalCoverageTargets.Count -gt 0) {
+            $criticalCoverageTargets
+          }
+          else {
+            $defaultCoverageTargets
+          }
+          $coverageTargets = $coverageTargetCandidates |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ } |
+            Select-Object -Unique |
+            Where-Object { Test-Path $_ }
           if ($coverageTargets.Count -gt 0) {
             $config.CodeCoverage.Path = $coverageTargets
           }
@@ -167,12 +194,11 @@ jobs:
           }
           Write-Host "Coverage OK: $pct% >= $env.COVERAGE_MIN%"
 
-      - name: Enforce file floors for critical modules (>= ${{ env.COVERAGE_MIN }}%)
+      - name: Enforce file floors for Core + Build (>= ${{ env.FILE_FLOOR }}%)
         if: env.COVERAGE_ENFORCE == 'true'
         shell: pwsh
         run: |
-          $criticalCandidates = $env:CRITICAL_PATHS -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-          $critical = @($criticalCandidates | Where-Object { Test-Path $_ })
+          $critical = @('src/Core.psm1', 'tools/Build.ps1') | Where-Object { Test-Path $_ }
           if ($critical.Count -eq 0) {
             Write-Host 'No critical files found; per-file floors skipped.'
             return
@@ -187,14 +213,48 @@ jobs:
             Write-Host 'No classes reported; skipping file-floor enforcement.'
             return
           }
+          $normalize = {
+            param($path)
+            if (-not $path) { return '' }
+            $value = (($path -replace '\\', '/') -as [string])
+            if (-not $value) { return '' }
+            $value = $value.ToLowerInvariant()
+            while ($value.StartsWith('./')) { $value = $value.Substring(2) }
+            while ($value.StartsWith('../')) { $value = $value.Substring(3) }
+            return $value
+          }
+          $workspace = (Get-Location).Path
+          $criticalResolved = foreach ($candidate in $critical) {
+            $full = (Resolve-Path -LiteralPath $candidate -ErrorAction Stop).Path
+            $relative = [System.IO.Path]::GetRelativePath($workspace, $full)
+            [pscustomobject]@{
+              Display = $candidate
+              Full     = $full
+              Relative = $relative
+              NormalizedFull     = & $normalize $full
+              NormalizedRelative = & $normalize $relative
+            }
+          }
           $violations = @()
-          foreach ($c in $classes) {
-            if ($critical -contains $c.filename) {
-              $lines = @($c.SelectNodes('lines/line'))
-              $total = $lines.Count
-              $covered = ($lines | Where-Object { [int]$_.GetAttribute('hits') -gt 0 }).Count
-              $pct = if ($total -gt 0) { [math]::Round(($covered / $total) * 100, 2) } else { 100 }
-              if ($pct -lt [double]$env:COVERAGE_MIN) { $violations += "$($c.filename)=$pct%" }
+          foreach ($target in $criticalResolved) {
+            $match = $null
+            foreach ($c in $classes) {
+              $className = & $normalize $c.filename
+              if ($className -eq $target.NormalizedFull -or $className -eq $target.NormalizedRelative) {
+                $match = $c
+                break
+              }
+            }
+            if (-not $match) {
+              $violations += "$($target.Display)=missing"
+              continue
+            }
+            $lines = @($match.SelectNodes('lines/line'))
+            $total = $lines.Count
+            $covered = ($lines | Where-Object { [int]$_.GetAttribute('hits') -gt 0 }).Count
+            $pct = if ($total -gt 0) { [math]::Round(($covered / $total) * 100, 2) } else { 100 }
+            if ($pct -lt [double]$env:FILE_FLOOR) {
+              $violations += "$($match.filename)=$pct%"
             }
           }
           if ($violations.Count -gt 0) {
