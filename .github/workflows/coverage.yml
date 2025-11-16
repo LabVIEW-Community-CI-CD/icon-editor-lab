@@ -20,7 +20,15 @@ jobs:
       COVERAGE_ENFORCE: "true"
       CRITICAL_PATHS: >-
         src/Core.psm1,
-        tools/Build.ps1
+        tools/Build.ps1,
+        src/tools/Check-DocsLinks.ps1,
+        src/tools/Check-WorkflowDrift.ps1,
+        src/tools/Agent-Wait.ps1,
+        local-ci/windows/scripts/Invoke-ViCompareLabVIEWCli.ps1,
+        tools/Validate-Paths.psm1,
+        tools/Validate-Config.ps1,
+        tools/Hash-Artifacts.ps1,
+        tools/Export-SemverBundle.ps1
     steps:
       - uses: actions/checkout@v4
 
@@ -125,7 +133,11 @@ jobs:
           $config.CodeCoverage.Enabled = $true
           $config.CodeCoverage.OutputFormat = 'Cobertura'
           $config.CodeCoverage.OutputPath  = 'artifacts/coverage/coverage.xml'
-          $coverageTargets = @(
+          $criticalCoverageTargets = @()
+          if ($env:CRITICAL_PATHS) {
+            $criticalCoverageTargets = $env:CRITICAL_PATHS -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+          }
+          $defaultCoverageTargets = @(
             'src/tools/ConsoleUx.psm1',
             'src/tools/LabVIEWCli.psm1',
             'src/tools/LabVIEWPidTracker.psm1',
@@ -137,7 +149,18 @@ jobs:
             'src/tools/GCli.psm1',
             'src/tools/LabVIEWLabVIEWCLI.psm1',
             'src/tools/Get-PesterVersion.ps1'
-          ) | Where-Object { Test-Path $_ }
+          )
+          $coverageTargetCandidates = if ($criticalCoverageTargets.Count -gt 0) {
+            $criticalCoverageTargets
+          }
+          else {
+            $defaultCoverageTargets
+          }
+          $coverageTargets = $coverageTargetCandidates |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ } |
+            Select-Object -Unique |
+            Where-Object { Test-Path $_ }
           if ($coverageTargets.Count -gt 0) {
             $config.CodeCoverage.Path = $coverageTargets
           }
@@ -177,6 +200,18 @@ jobs:
             Write-Host 'No critical files found; per-file floors skipped.'
             return
           }
+          $criticalResolved = @()
+          foreach ($candidate in $critical) {
+            try {
+              $resolvedPath = (Resolve-Path -LiteralPath $candidate -ErrorAction Stop).Path
+            } catch {
+              $resolvedPath = $candidate
+            }
+            $criticalResolved += [pscustomobject]@{
+              Full = $resolvedPath
+              Name = [System.IO.Path]::GetFileName($resolvedPath)
+            }
+          }
           if (-not (Test-Path artifacts/coverage/coverage.xml)) {
             throw 'coverage.xml missing'
           }
@@ -189,7 +224,12 @@ jobs:
           }
           $violations = @()
           foreach ($c in $classes) {
-            if ($critical -contains $c.filename) {
+            $fileName = $c.filename
+            $fileLeaf = Split-Path -Path $fileName -Leaf
+            $matched = $criticalResolved | Where-Object {
+              $_.Full -eq $fileName -or $_.Name -eq $fileLeaf
+            }
+            if ($matched) {
               $lines = @($c.SelectNodes('lines/line'))
               $total = $lines.Count
               $covered = ($lines | Where-Object { [int]$_.GetAttribute('hits') -gt 0 }).Count

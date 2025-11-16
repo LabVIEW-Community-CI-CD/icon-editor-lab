@@ -10,14 +10,14 @@ Invoke-ProcessCapture: brief description (TODO: refine).
 Auto-seeded to satisfy help synopsis presence. Update with real details.
 #>
 function Invoke-ProcessCapture {
-
-    # ShouldProcess guard: honor -WhatIf / -Confirm
-    if (-not $PSCmdlet.ShouldProcess($MyInvocation.MyCommand.Name, 'Execute')) { return }
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$FileName,
         [Parameter()][string[]]$Arguments = @()
     )
+
+    # ShouldProcess guard: honor -WhatIf / -Confirm
+    if (-not $PSCmdlet.ShouldProcess($MyInvocation.MyCommand.Name, 'Execute')) { return }
     $psi = [System.Diagnostics.ProcessStartInfo]::new()
     $psi.FileName = $FileName
     $psi.Arguments = ($Arguments -join ' ')

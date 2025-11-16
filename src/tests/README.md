@@ -1,5 +1,7 @@
 # Tests Overview
 
+> `src/tests/` is kept as legacy/example coverage and is not part of the CI gates.
+
 The `tests/` folder contains the Pester suites and helper harnesses that guard each Icon Editor workflow (dev mode, Missing In Project, packaging, compare/VI Analyzer, and VIPM scenarios). The suites are primarily invoked through `Invoke-PesterTests.ps1`, but can also be targeted via `-TestsPath` or `-Tag` filters when iterating locally.
 
 ## Running the suites
