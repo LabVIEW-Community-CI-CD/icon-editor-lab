@@ -204,6 +204,209 @@
       ],
       "dependsOrder": "sequence",
       "problemMatcher": []
+    },
+    {
+      "label": "Tools: Build x-cli",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "${workspaceFolder}/tools/x-cli-develop/src/XCli/XCli.csproj",
+        "-c",
+        "Release",
+        "-o",
+        "${workspaceFolder}/out/xcli"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Tools: Package x-cli",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-Command",
+        "Write-Host \"[[xcli]] Packaging published binary from ${workspaceFolder}/out/xcli to artifacts/xcli-win-x64.zip\"; New-Item -ItemType Directory -Force -Path ${workspaceFolder}/artifacts | Out-Null; Compress-Archive -Path ${workspaceFolder}/out/xcli/* -DestinationPath ${workspaceFolder}/artifacts/xcli-win-x64.zip -Force; Get-Item ${workspaceFolder}/artifacts/xcli-win-x64.zip | Select-Object FullName, Length"
+      ],
+      "dependsOn": [
+        "Tools: Build x-cli"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Tools: Stage x-cli artifact",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/tools/Stage-XCliArtifact.ps1",
+        "-RepoRoot",
+        "${workspaceFolder}",
+        "-ArtifactPath",
+        "${workspaceFolder}/artifacts/xcli-win-x64.zip",
+        "-Channel",
+        "${input:xcliStageChannel}",
+        "-Overwrite"
+      ],
+      "dependsOn": [
+        "Tools: Package x-cli"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Tools: Validate x-cli release asset",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/tools/Test-XCliReleaseAsset.ps1",
+        "-RepoRoot",
+        "${workspaceFolder}"
+      ],
+      "options": {
+        "env": {
+          "XCLI_STAGE_CHANNEL": "${input:xcliStageChannel}"
+        }
+      },
+      "dependsOn": [
+        "Tools: Stage x-cli artifact"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Tools: Promote x-cli to QA",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/tools/Promote-XCliArtifact.ps1",
+        "-RepoRoot",
+        "${workspaceFolder}"
+      ],
+      "options": {
+        "env": {
+          "XCLI_STAGE_CHANNEL": "${input:xcliStageChannel}",
+          "XCLI_QA_DESTINATION": "${input:xcliQaDestination}"
+        }
+      },
+      "dependsOn": [
+        "Tools: Validate x-cli release asset"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Tools: Upload x-cli artifact",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/tools/Upload-XCliArtifact.ps1",
+        "-RepoRoot",
+        "${workspaceFolder}",
+        "-Mode",
+        "${input:xcliUploadMode}",
+        "-ReleaseRepo",
+        "${input:xcliReleaseRepo}",
+        "-ReleaseTag",
+        "${input:xcliReleaseTag}",
+        "-DestinationFolder",
+        "${input:xcliDestinationFolder}",
+        "-DestinationFileName",
+        "${input:xcliFolderFileName}"
+      ],
+      "options": {
+        "env": {
+          "XCLI_STAGE_CHANNEL": "${input:xcliStageChannel}"
+        }
+      },
+      "dependsOn": [
+        "Tools: Promote x-cli to QA"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Tools: Publish x-cli",
+      "dependsOn": [
+        "Tools: Build x-cli",
+        "Tools: Package x-cli",
+        "Tools: Stage x-cli artifact",
+        "Tools: Validate x-cli release asset",
+        "Tools: Promote x-cli to QA",
+        "Tools: Upload x-cli artifact"
+      ],
+      "dependsOrder": "sequence",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-Command",
+        "Write-Host \"[[xcli]] Build → package → stage → validate → QA → upload complete.\""
+      ],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "xcliStageChannel",
+      "type": "promptString",
+      "description": "Channel name for staging (e.g., local/dev/qa)",
+      "default": "local"
+    },
+    {
+      "id": "xcliQaDestination",
+      "type": "promptString",
+      "description": "Destination folder for QA promotion (relative paths allowed)",
+      "default": ".tmp-tests/xcli-qa"
+    },
+    {
+      "id": "xcliUploadMode",
+      "type": "pickString",
+      "description": "Upload target for staged artifact",
+      "options": [
+        {
+          "label": "GitHub release (dry-run)",
+          "value": "github"
+        },
+        {
+          "label": "Folder copy",
+          "value": "folder"
+        }
+      ],
+      "default": "folder"
+    },
+    {
+      "id": "xcliReleaseRepo",
+      "type": "promptString",
+      "description": "GitHub release repository (owner/name)",
+      "default": "svelderrainruiz/icon-editor-lab"
+    },
+    {
+      "id": "xcliReleaseTag",
+      "type": "promptString",
+      "description": "Optional release tag override (leave blank to use stage timestamp)",
+      "default": ""
+    },
+    {
+      "id": "xcliDestinationFolder",
+      "type": "promptString",
+      "description": "Folder for upload mode 'folder'",
+      "default": "C:\\\\Shared\\\\xcli-artifacts"
+    },
+    {
+      "id": "xcliFolderFileName",
+      "type": "promptString",
+      "description": "Optional file name override when copying to a folder (leave blank to keep zip name)",
+      "default": ""
     }
   ]
+
 }
