@@ -191,7 +191,7 @@ jobs:
       TSA_URL: ${{ vars.CODE_SIGNING_TSA_URL != '' && vars.CODE_SIGNING_TSA_URL || 'https://timestamp.digicert.com' }}
     steps:
       - name: Download unsigned artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: unsigned
           path: unsigned
@@ -348,7 +348,7 @@ jobs:
       TSA_URL: ${{ vars.CODE_SIGNING_TSA_URL != '' && vars.CODE_SIGNING_TSA_URL || 'https://timestamp.digicert.com' }}
     steps:
       - name: Download unsigned artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: unsigned
           path: unsigned
