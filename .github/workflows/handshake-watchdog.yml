@@ -96,7 +96,7 @@ jobs:
 
       - name: Ensure watchdog issue
         if: steps.analyze.outputs.needs_attention == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           LABEL_NAME: ${{ env.LABEL_NAME }}
           NOTIFY_HANDLES: ${{ env.NOTIFY_HANDLES }}
@@ -141,7 +141,7 @@ jobs:
 
       - name: Close watchdog issue when healthy
         if: steps.analyze.outputs.needs_attention != 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           LABEL_NAME: ${{ env.LABEL_NAME }}
         with:
